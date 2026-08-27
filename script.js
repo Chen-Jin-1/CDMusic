@@ -765,7 +765,7 @@ searchBox.i.oninput = function(e) {
     if (!kw) return searchBox.s.innerHTML = "";
     sbptimer = setTimeout(() => {
         sbac = new AbortController();
-        req("//apis.netstart.cn/music/search/suggest", {
+        req("//zm.wwoyun.cn/search/suggest", {
             keywords: kw
         }, { signal: sbac.signal })
             .then(({ result }) => {
@@ -801,7 +801,7 @@ function toSong(platfrom, song, close) {
     }
     if (platfrom === "cm") {
         sl.e.className = "ing";
-        req("//apis.netstart.cn/music/song/detail", { ids: song.id }, { signal })
+        req("//zm.wwoyun.cn/song/detail", { ids: song.id }, { signal })
             .then(rst => {
                 const d = rst.songs[0], fee = d.fee;
                 if (!d.name) console.error(d), cdmodal.alert("响应出错");
@@ -829,7 +829,7 @@ function toSong(platfrom, song, close) {
                     : '//music.163.com/song/media/outer/url?id='
                 ) + d.id;
             }),
-        req("//apis.netstart.cn/music/lyric", { id: song.id }, { signal })
+        req("//zm.wwoyun.cn/lyric", { id: song.id }, { signal })
             .then(d => {
                 if (!d.lrc) console.error(d), cdmodal.alert("处理歌词出错");
                 lrc = parselrc(d.lrc.lyric, d.tlyric?.lyric);
@@ -877,7 +877,7 @@ sr.e.onwheel = e => {
 function fsea() {
     const input = searchBox.i;
     searchBox.fr.className = input.value ? 'result searching' : 'result searching null';
-    input.value && req("//apis.netstart.cn/music/search", {
+    input.value && req("//zm.wwoyun.cn/search", {
         keywords: input.value.trim(),
     })
         .then(r => {
