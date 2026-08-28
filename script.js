@@ -114,11 +114,62 @@ shadow.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//use.fontawesome.com/releases/v7.3.1/css/all.css'
 }));
-await new Promise(r => shadow.appendChild(h('link', {
-    rel: 'stylesheet',
-    href: '//cdmsc.chen-jin.dpdns.org/shadow.css',
-    onload: e => r()
-})));
+cdmcss = shadow.appendChild(h('style', { textContent: `
+* { display: none; }
+host > .loading {
+    display: block;
+    position: absolute;
+    inset: 0;
+    background: #000;
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    overflow: hidden;
+    & > img {
+        zoom: .7;
+    }
+    & > div {
+        margin-top: 50px;
+        position: relative;
+        width: 150%;
+        & > .bar {
+            position: absolute;
+            height: 8px;
+            background: #999;
+            width: 100px;
+            border-radius: 5px;
+            animation: loading-bar 1.5s infinite linear; 
+        }
+    }
+    & > span {
+        margin-top: 40px;
+    }
+}
+@keyframes loading-bar {
+    0% {
+        right: 100%;
+        width: 100px;
+    }
+    25% {
+        right: 75%;
+        width: 150px;
+    }
+    50% {
+        right: 50%;
+        width: 200px;
+    }
+    75% {
+        right: 25%;
+        width: 150px;
+    }
+    100% {
+        right: 0;
+        width: 100px;
+    }
+}` }))
+const shadowcssp = fetch("//cdmsc.chen-jin.dpdns.org/shadow.css")
+    .then(r => r.text())
+    .then(t => cdmcss.textContent = t);
 function fa(name, tn = "i", props, el, type = 'appendChild', className, style, fatype) {
     const e = Object.assign(document.createElement(tn), props);
     e.className = `fa-${fatype ?? 'solid'} fa-${name} ${className ?? ''}`.trimEnd();
@@ -516,9 +567,10 @@ const loading = h('div', { className: 'loading' }, [
         h('div', { className: 'bar' })
     ]),
     loads = h('span', {
-        textContent: '加载字体中',
+        textContent: '加载样式中',
     }),
 ]);
+// await 
 shadow.appendChild(loading);
 document.title = "CDMusic";
 document.querySelector('[rel*="icon"]')?.remove();
