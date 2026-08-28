@@ -573,6 +573,7 @@ const loading = h('div', { className: 'loading' }, [
 ]);
 shadow.appendChild(loading);
 await shadowcssp;
+loads.textContent = "加载字体中";
 document.title = "CDMusic";
 document.querySelector('[rel*="icon"]')?.remove();
 document.head.appendChild(h("link", {
