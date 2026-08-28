@@ -1,4 +1,4 @@
-const version = 'v1.1.5';
+const version = 'v1.1.6 Alpha 1';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -58,8 +58,13 @@ cdmodal.importSettings({
             },
             {
                 "type": "text",
+                "label": "v1.1.6",
+                "description": ""
+            },
+            {
+                "type": "text",
                 "label": "v1.1.5",
-                "description": "优化网页版；CSS 采用外联样式表；打字时不显示搜索建议；修复 CCW 版 Alert 不显示问题"
+                "description": "优化网页版\nCSS 采用外联样式表\n打字时不显示搜索建议\n修复 CCW 版 Alert 不显示问题"
             },
             {
                 "type": "text",
@@ -69,32 +74,32 @@ cdmodal.importSettings({
             {
                 "type": "text",
                 "label": "v1.1.3",
-                "description": "制作网页版；更换 CDMusic 网易云 API"
+                "description": "制作网页版\n更换 CDMusic 网易云 API"
             },
             {
                 "type": "text",
                 "label": "v1.1.2",
-                "description": "修复部分歌词问题；完善全屏搜索（显示搜索状态）；更新 CDModal（但 CDMusic 设置还没做）"
+                "description": "修复部分歌词问题\n完善全屏搜索（显示搜索状态）\n更新 CDModal（但 CDMusic 设置还没做）"
             },
             {
                 "type": "text",
                 "label": "v1.1.1",
-                "description": "修复重新播放时最后一句仍亮；纯音乐无法播放；完善全屏搜索（但分页还没做）；切歌标题修改；滚动后 3 秒内不自动滚动"
+                "description": "修复重新播放时最后一句仍亮\n纯音乐无法播放\n完善全屏搜索（但分页还没做）\n切歌标题修改\n滚动后 3 秒内不自动滚动"
             },
             {
                 "type": "text",
                 "label": "v1.1.0",
-                "description": "修复切换页面歌词和时间异常；图标修改；采用新音频获取方式，节省流量与节约时间；VIP / 付费标识（付费歌曲提示）；免费和试听音乐优先使用网易云官方 API；歌曲加载处理；双语歌词支持"
+                "description": "修复切换页面歌词和时间异常\n图标修改\n采用新音频获取方式，节省流量与节约时间\nVIP / 付费标识（付费歌曲提示）\n免费和试听音乐优先使用网易云官方 API\n歌曲加载处理\n双语歌词支持"
             },
             {
                 "type": "text",
                 "label": "v1.0.3",
-                "description": "原先播放，切歌后暂停；背景采色（避免边缘泛灰）；加载界面；请求歌曲 API 而非硬编码；修改标题和图标"
+                "description": "原先播放，切歌后暂停\n背景采色（避免边缘泛灰）\n加载界面\n请求歌曲 API 而非硬编码\n修改标题和图标"
             },
             {
                 "type": "text",
                 "label": "v1.0.2",
-                "description": "修复关闭搜索不彻底（输入内容仍保留，显示透明搜索建议）、歌词未归零（重播与切歌时）；请求歌曲优先 fetch 替换 m? 为 m9"
+                "description": "修复关闭搜索不彻底（输入内容仍保留，显示透明搜索建议）、歌词未归零（重播与切歌时）\n请求歌曲优先 fetch 替换 m? 为 m9"
             },
             {
                 "type": "text",
@@ -195,7 +200,7 @@ let playing = false,
     searchBox = {},
     layer,
     nscroll = 1;
-h('div', { id: 'song' }, [
+const songEl = h('div', { id: 'song' }, [
     layer = h('div', { className: 'layer' }),
     sl.e = h('div', {
         id: 'song-left',
@@ -356,10 +361,10 @@ function createlrc() {
             spaf(null, 0);
         },
     }))));
-    el.scrollTo({
+    requestAnimationFrame(() => el.scrollTo({
         top: 0,
         behavior: 'smooth'
-    });
+    }));
 }
 function updatelrc(time = audio.currentTime, i = lrci, force) {
     if (force) {
@@ -467,7 +472,7 @@ function toSong(platfrom, song, close) {
                         const bu = URL.createObjectURL(b);
                         sl.pic.src = bu;
                         layer.style.backgroundImage = `url('${bu}')`;
-                        getImageColor(bu).then(u => host.style.backgroundColor = u);
+                        getImageColor(bu).then(u => songEl.style.backgroundColor = u);
                     });
                 sl.songname.textContent = d.name;
                 sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })));
@@ -552,14 +557,11 @@ function fsea() {
 const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.settings("CDMusic 设置") })),
     playlist = shadow.appendChild(fa('list', 'button', { onclick: () => 1 }));
 
-;(
-    typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
-        ? document.body
-        : location.host === "www.ccw.site" && rt.isPlayerOnly
-            ? document.querySelector('.workTabs-1dkUq')
-            : location.host === "40code.com"
-                ? 0
-                : rt.renderer.canvas.parentNode
+;(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
+    ? document.body
+    : location.host === "www.ccw.site" && rt.isPlayerOnly
+        ? document.querySelector('.workTabs-1dkUq')
+        : rt.renderer.canvas.parentNode
 ).appendChild(host);
 
 const loading = h('div', { className: 'loading' }, [
