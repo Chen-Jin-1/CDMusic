@@ -114,9 +114,9 @@ shadow.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//use.fontawesome.com/releases/v7.3.1/css/all.css'
 }));
-cdmcss = shadow.appendChild(h('style', { textContent: `
-* { display: none; }
-host > .loading {
+const cdmcss = shadow.appendChild(h('style', { textContent: `
+*:not(.loading *) { display: none; }
+:host > .loading {
     display: block;
     position: absolute;
     inset: 0;
@@ -125,6 +125,7 @@ host > .loading {
     justify-items: center;
     align-content: center;
     overflow: hidden;
+    color: #fff;
     & > img {
         zoom: .7;
     }
@@ -570,21 +571,20 @@ const loading = h('div', { className: 'loading' }, [
         textContent: '加载样式中',
     }),
 ]);
-// await 
 shadow.appendChild(loading);
+await shadowcssp;
 document.title = "CDMusic";
 document.querySelector('[rel*="icon"]')?.remove();
 document.head.appendChild(h("link", {
     rel: 'icon',
     href: '//m.ccw.site/works-covers/cdmusic-icon-v3.1.svg'
 }));
-Promise.all([
+await Promise.all([
     document.fonts.load("16px 'PingFang'"),
     document.fonts.load("16px 'Font Awesome 7 Free'"),
-]).then(() => {
-    loading.classList.add("out");
-    setTimeout(() => loading.remove(), 300);
-});
+]);
+loading.classList.add("out");
+setTimeout(() => loading.remove(), 300);
 document.onvisibilitychange = e => {
     if (document.visibilityState === "hidden") {
         cancelAnimationFrame(afid);
