@@ -1,4 +1,4 @@
-const version = 'v1.1.6 Alpha 2';
+const version = 'v1.1.6 Alpha 3';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -59,7 +59,7 @@ cdmodal.importSettings({
             {
                 "type": "text",
                 "label": "v1.1.6",
-                "description": ""
+                "description": "小歌曲界面"
             },
             {
                 "type": "text",
@@ -131,6 +131,7 @@ const cdmcss = shadow.appendChild(h('style', { textContent: `
     align-content: center;
     overflow: hidden;
     color: #fff;
+    z-index: 10;
     & > img {
         zoom: .7;
     }
@@ -446,7 +447,7 @@ searchBox.i.oninput = function(e) {
 }
 searchBox.i.addEventListener("compositionend", e => sug());
 
-const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.crossOrigin='anonymous';img.src=imageUrl;img.onload=function(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const size=100;canvas.width=size;canvas.height=size;ctx.drawImage(img,0,0,size,size);const imageData=ctx.getImageData(0,0,size,size);const data=imageData.data;const pixelArray=[];for(let i=0;i<data.length;i+=4){pixelArray.push([data[i],data[i+1],data[i+2]])}function medianCut(colors,depth){if(colors.length<=8||depth===0){const avg=colors.reduce((acc,c)=>[acc[0]+c[0],acc[1]+c[1],acc[2]+c[2]],[0,0,0]);return avg.map(v=>Math.round(v/colors.length))}let maxRange=-1;let channel=0;for(let c=0;c<3;c++){const min=Math.min(...colors.map(p=>p[c]));const max=Math.max(...colors.map(p=>p[c]));if(max-min>maxRange){maxRange=max-min;channel=c}}colors.sort((a,b)=>a[channel]-b[channel]);const mid=Math.floor(colors.length/2);const left=colors.slice(0,mid);const right=colors.slice(mid);const leftAvg=medianCut(left,depth-1);const rightAvg=medianCut(right,depth-1);return leftAvg.map((v,i)=>Math.round((v+rightAvg[i])/2))}const dominantRgb=medianCut(pixelArray,6);const color=`rgb(${dominantRgb[0]*.5},${dominantRgb[1]*.5},${dominantRgb[2]*.5})`;callback(color)};img.onerror=e=>{throw e}});
+const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.crossOrigin='anonymous';img.src=imageUrl;img.onload=function(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const size=100;canvas.width=size;canvas.height=size;ctx.drawImage(img,0,0,size,size);const imageData=ctx.getImageData(0,0,size,size);const data=imageData.data;const pixelArray=[];for(let i=0;i<data.length;i+=4){pixelArray.push([data[i],data[i+1],data[i+2]])}function medianCut(colors,depth){if(colors.length<=8||depth===0){const avg=colors.reduce((acc,c)=>[acc[0]+c[0],acc[1]+c[1],acc[2]+c[2]],[0,0,0]);return avg.map(v=>Math.round(v/colors.length))}let maxRange=-1;let channel=0;for(let c=0;c<3;c++){const min=Math.min(...colors.map(p=>p[c]));const max=Math.max(...colors.map(p=>p[c]));if(max-min>maxRange){maxRange=max-min;channel=c}}colors.sort((a,b)=>a[channel]-b[channel]);const mid=Math.floor(colors.length/2);const left=colors.slice(0,mid);const right=colors.slice(mid);const leftAvg=medianCut(left,depth-1);const rightAvg=medianCut(right,depth-1);return leftAvg.map((v,i)=>Math.round((v+rightAvg[i])/2))}const dominantRgb=medianCut(pixelArray,6);const color=dominantRgb;callback(color)};img.onerror=e=>{throw e}});
 
 let songac;
 function toSong(platfrom, song, close) {
@@ -478,7 +479,11 @@ function toSong(platfrom, song, close) {
                         const bu = URL.createObjectURL(b);
                         sl.pic.src = bu;
                         layer.style.backgroundImage = `url('${bu}')`;
-                        getImageColor(bu).then(u => songEl.style.backgroundColor = u);
+                        getImageColor(bu).then(u => {
+                            songEl.style.backgroundColor = `rgb(${u.map(i => i * .5)})`;
+                            sl.pic.style.boxShadow = `0 0 50px rgb(${u})`;
+                            console.log(u);
+                        });
                     });
                 sl.songname.textContent = d.name;
                 sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
