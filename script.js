@@ -1,4 +1,4 @@
-const version = 'v1.1.6 Alpha 1';
+const version = 'v1.1.6 Alpha 2';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -199,9 +199,14 @@ let playing = false,
     sr = {},
     searchBox = {},
     layer,
-    nscroll = 1;
-const songEl = h('div', { id: 'song' }, [
+    nscroll = 1,
+    sfold;
+const songEl = h('div', {
+        id: 'song',
+        // className: 'little',
+    }, [
     layer = h('div', { className: 'layer' }),
+    // sfold = fa("angle-down"),
     sl.e = h('div', {
         id: 'song-left',
         className: 'ing fail'
@@ -213,9 +218,10 @@ const songEl = h('div', { id: 'song' }, [
         sl.songname = h('span', {
             textContent: '未播放',
             className: 'song-name'
-        }),
-        sl.singers = h('span', { className: 'singers' }, [
-            h('span', { textContent: 'CDMusic' }),
+        }, [
+            sl.singers = h('span', { className: 'singers' }, [
+                h('span', { textContent: 'CDMusic' }),
+            ]),
         ]),
         sl.p.e = h('div', {
             className: 'progress',
@@ -475,7 +481,8 @@ function toSong(platfrom, song, close) {
                         getImageColor(bu).then(u => songEl.style.backgroundColor = u);
                     });
                 sl.songname.textContent = d.name;
-                sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })));
+                sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
+                sl.songname.appendChild(sl.singers);
                 (fee == 1 || fee == 4) && sl.songname.appendChild(h('div', {
                     className: 'vip',
                     textContent: fee == 1 ? 'VIP' : '付费'

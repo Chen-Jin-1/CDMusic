@@ -4,6 +4,7 @@
     color: #fff;
     z-index: 0;
     overflow: hidden;
+    background: #000;
 }
 
 * {
@@ -79,6 +80,9 @@ button[class] {
             display: grid;
             grid-auto-flow: column;
             align-items: center;
+            grid-template-columns: auto 1fr auto;
+            grid-template-rows: auto auto;
+            word-break: break-word;
             & > .vip {
                 animation: show .3s;
                 margin-left: auto;
@@ -90,13 +94,17 @@ button[class] {
                 border-radius: 5px;
                 color: #ffffffaa;
                 height: 18px;
+                width: max-content;
+                align-self: start;
             }
-        }
-        & > .singers {
-            color: #ffffff80;
-            margin-bottom: 10px;
-            & > span:not(:last-child)::after {
-                content: ' / '
+            & > .singers {
+                color: #ffffff80;
+                margin-bottom: 10px;
+                grid-column: 1 / -1;
+                grid-row: 2;
+                & > span:not(:last-child)::after {
+                    content: ' / '
+                }
             }
         }
         & > .btns {
@@ -170,129 +178,6 @@ button[class] {
                 pointer-events: none;
             }
         }
-        #song.little {
-            top: calc(100% - 50px);
-            align-items: center;
-            overflow: hidden;
-            & > #song-right {
-                width: 0;
-            }
-            & > #song-left {
-                width: 100%;
-                height: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: flex-start;
-                padding: 0 20px;
-                gap: 15px;
-                grid: none;
-                
-                /* 专辑图缩小 */
-                & > img {
-                    width: auto;
-                    height: 70%;
-                    margin-bottom: 0;
-                    flex-shrink: 0;
-                    border-radius: 8%;
-                }
-                
-                /* 歌名改为flex横向 */
-                & > .song-name {
-                    display: flex;
-                    align-items: center;
-                    gap: 6px;
-                    font-size: 14px;
-                    color: #fff;
-                    white-space: nowrap;
-                    grid: none;
-                    
-                    & > .vip {
-                        margin-left: 0;
-                        font-size: 10px;
-                        height: 16px;
-                        padding: 0 4px;
-                    }
-                }
-                
-                /* 歌手 */
-                & > .singers {
-                    font-size: 12px;
-                    margin-bottom: 0;
-                    white-space: nowrap;
-                }
-                
-                /* 进度条 */
-                & > .progress {
-                    flex: 1;
-                    min-width: 80px;
-                    max-width: 300px;
-                    padding: 3px 0;
-                    
-                    & > .load {
-                        height: 2px;
-                        
-                        & > .play > .dot {
-                            width: 5px;
-                            height: 5px;
-                            top: -1.5px;
-                            right: -2px;
-                        }
-                    }
-                    
-                    &:hover > .load {
-                        height: 3px;
-                        .dot {
-                            scale: 1.8;
-                            top: -1px;
-                        }
-                    }
-                }
-                
-                /* 时间 */
-                & > .time {
-                    font-size: 11px;
-                    margin-bottom: 0;
-                    min-width: fit-content;
-                }
-                
-                /* 按钮 */
-                & > .btns {
-                    flex-shrink: 0;
-                    gap: 8px;
-                    align-items: center;
-                    
-                    & > #btn-play {
-                        transform: scale(1.1);
-                    }
-                }
-            }
-            
-            /* 加载状态适配 */
-            &.ing {
-                & > #song-left {
-                    & > .progress {
-                        overflow-x: hidden;
-                        pointer-events: none;
-                        
-                        & > .load {
-                            width: 20%;
-                            animation: song-load 1s infinite;
-                        }
-                    }
-                    
-                    & > .progress > .load > .play,
-                    & > .time {
-                        opacity: 0;
-                        pointer-events: none;
-                    }
-                    
-                    & > .btns > #btn-play {
-                        opacity: .5;
-                        pointer-events: none;
-                    }
-                }
-            }
-        }
     }
     & > #song-right {
         width: 60%;
@@ -324,6 +209,123 @@ button[class] {
             content: '';
             display: block;
             height: 50%;
+        }
+    }
+    &.little {
+        top: calc(100% - 50px);
+        align-items: center;
+        /* overflow: hidden; */
+        & > #song-right {
+            width: 0;
+        }
+        & > #song-left {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0 20px;
+            gap: 15px;
+            & > img {
+                width: auto;
+                height: 70%;
+                margin-bottom: 0;
+                flex-shrink: 0;
+                border-radius: 8%;
+            }
+            
+            & > .song-name {
+                width: 40%;
+                font-size: 14px;
+                white-space: nowrap;
+                max-width: 100%;
+                overflow-x: hidden;
+                display: block;
+                text-overflow: ellipsis;
+                & > .vip {
+                    margin-left: 0;
+                    font-size: 0;
+                    height: 0;
+                    padding: 0;
+                    opacity: 0;
+                }
+                & > .singers {
+                    margin-bottom: 0;
+                    display: block; 
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+            }
+            
+            & > .progress {
+                flex: 1;
+                min-width: 80px;
+                max-width: 300px;
+                padding: 3px 0;
+                
+                & > .load {
+                    height: 2px;
+                    
+                    & > .play > .dot {
+                        width: 5px;
+                        height: 5px;
+                        top: -1.5px;
+                        right: -2px;
+                    }
+                }
+                
+                &:hover > .load {
+                    height: 3px;
+                    .dot {
+                        scale: 1.8;
+                        top: -1px;
+                    }
+                }
+            }
+            
+            /* 时间 */
+            & > .time {
+                font-size: 11px;
+                margin-bottom: 0;
+                min-width: fit-content;
+            }
+            
+            /* 按钮 */
+            & > .btns {
+                flex-shrink: 0;
+                gap: 8px;
+                align-items: center;
+                
+                & > #btn-play {
+                    transform: scale(1.1);
+                }
+            }
+        }
+        
+        /* 加载状态适配 */
+        &.ing {
+            & > #song-left {
+                & > .progress {
+                    overflow-x: hidden;
+                    pointer-events: none;
+                    
+                    & > .load {
+                        width: 20%;
+                        animation: song-load 1s infinite;
+                    }
+                }
+                
+                & > .progress > .load > .play,
+                & > .time {
+                    opacity: 0;
+                    pointer-events: none;
+                }
+                
+                & > .btns > #btn-play {
+                    opacity: .5;
+                    pointer-events: none;
+                }
+            }
         }
     }
 }
