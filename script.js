@@ -1,4 +1,4 @@
-const version = 'v1.1.6 Alpha 4';
+const version = 'v1.1.6';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -45,7 +45,14 @@ cdmodal.importSettings({
         "items": [
             {
                 "type": "text",
-                "label": `CDMusic ${version} ${location.host === "www.ccw.site" ? 'For CCW' : ''}`,
+                "label": `CDMusic ${version} ${location.host === "www.ccw.site"
+                    ? 'For CCW'
+                    : location.host === "40code.com"
+                        ? 'For 40code'
+                        : location.host === "zerocat.dev"
+                            ? 'For ZeroCat'
+                            : ''
+                }`,
                 "description": "by Chen-Jin"
             },
             {
@@ -59,7 +66,7 @@ cdmodal.importSettings({
             {
                 "type": "text",
                 "label": "v1.1.6",
-                "description": "小歌曲界面"
+                "description": "小歌曲界面\n性能优化\nBug 修复"
             },
             {
                 "type": "text",
@@ -200,7 +207,8 @@ let playing = false,
     sr = {},
     searchBox = {},
     layer,
-    nscroll = 1;
+    nscroll = 1,
+    blobMap = {};
 const songEl = h('div', {
         id: 'song',
         // className: 'little',
@@ -387,7 +395,17 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
     }
 }
 createlrc();
-audio.onended = () => (lrci = -1, audio.addEventListener("play", e => lrcEls.at(-1).className = "", { once: 1 }));
+audio.onended = () => {
+    lrci = -1;
+    audio.addEventListener("play", e => {
+        lrcEls.className = "";
+        nscroll = 1;
+        sr.e.scrollTo({
+            top: 0,
+            behavior: 'smooth',
+        });
+    }, { once: 1 })
+};
 function req(_url, body, opt, _method = 'get', responseType = "json", gm) {
     const method = _method.toUpperCase(), url = (method === "GET" && body) ? `${_url}?${new URLSearchParams(body)}` : _url;
     if (gm) {
@@ -436,9 +454,7 @@ searchBox.i.oninput = function(e) {
     sug();
 }
 searchBox.i.addEventListener("compositionend", e => sug());
-
 const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.crossOrigin='anonymous';img.src=imageUrl;img.onload=function(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const size=100;canvas.width=size;canvas.height=size;ctx.drawImage(img,0,0,size,size);const imageData=ctx.getImageData(0,0,size,size);const data=imageData.data;const pixelArray=[];for(let i=0;i<data.length;i+=4){pixelArray.push([data[i],data[i+1],data[i+2]])}function medianCut(colors,depth){if(colors.length<=8||depth===0){const avg=colors.reduce((acc,c)=>[acc[0]+c[0],acc[1]+c[1],acc[2]+c[2]],[0,0,0]);return avg.map(v=>Math.round(v/colors.length))}let maxRange=-1;let channel=0;for(let c=0;c<3;c++){const min=Math.min(...colors.map(p=>p[c]));const max=Math.max(...colors.map(p=>p[c]));if(max-min>maxRange){maxRange=max-min;channel=c}}colors.sort((a,b)=>a[channel]-b[channel]);const mid=Math.floor(colors.length/2);const left=colors.slice(0,mid);const right=colors.slice(mid);const leftAvg=medianCut(left,depth-1);const rightAvg=medianCut(right,depth-1);return leftAvg.map((v,i)=>Math.round((v+rightAvg[i])/2))}const dominantRgb=medianCut(pixelArray,6);const color=dominantRgb;callback(color)};img.onerror=e=>{throw e}});
-
 let songac;
 function toSong(platfrom, song, close) {
     playc(0);
@@ -460,19 +476,23 @@ function toSong(platfrom, song, close) {
         sl.e.className = "ing";
         req("//zm.wwoyun.cn/song/detail", { ids: song.id }, { signal })
             .then(rst => {
-                const d = rst.songs[0], fee = d.fee;
+                const d = rst.songs[0], fee = d.fee, _u = d.al.picUrl, upth = `p${new URL(_u).pathname}`;
                 if (!d.name) console.error(d), cdmodal.alert("响应出错");
-                fetch(`${d.al.picUrl}?param=500x500`, { signal })
+                function setPicUrl(u) {
+                    sl.pic.src = u;
+                    layer.style.backgroundImage = `url('${u}')`;
+                    getImageColor(u).then(c => {
+                        songEl.style.backgroundColor = `rgb(${c.map(i => i * .5)})`;
+                        sl.pic.style.boxShadow = `0 0 50px rgb(${c})`;
+                    });
+                }
+                if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
+                else fetch(`${_u}?param=500x500`, { signal })
                     .then(r => r.blob())
                     .then(b => {
                         const bu = URL.createObjectURL(b);
-                        sl.pic.src = bu;
-                        layer.style.backgroundImage = `url('${bu}')`;
-                        getImageColor(bu).then(u => {
-                            songEl.style.backgroundColor = `rgb(${u.map(i => i * .5)})`;
-                            sl.pic.style.boxShadow = `0 0 50px rgb(${u})`;
-                            console.log(u);
-                        });
+                        blobMap[upth] = bu;
+                        setPicUrl(bu);
                     });
                 sl.songname.textContent = d.name;
                 sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
@@ -561,9 +581,11 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.se
         let scl;
         songEl.className = "little";
         sl.t.play.after(sl.p.e);
+        songEl.style.cursor = 'pointer';
         function rsn() {
             songEl.className = "";
             sl.songname.after(sl.p.e);
+            songEl.style.cursor = '';
             songEl.removeEventListener('click', scl);
         }
         songEl.addEventListener('click', scl = e => [songEl, sl.e, sl.pic].includes(e.target) && rsn());

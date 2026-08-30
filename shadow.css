@@ -240,6 +240,7 @@ button[class] {
                 margin-bottom: 0;
                 flex-shrink: 0;
                 border-radius: 10%;
+                box-shadow: none !important;
             }
             & > .song-name {
                 width: 50%;
@@ -263,7 +264,7 @@ button[class] {
                 }
             }
             & .progress {
-                margin: auto 1%;
+                margin: auto 10px;
                 width: 100%;
                 & > .load {
                     height: 2px;
@@ -325,7 +326,6 @@ button[class] {
 .search {
     position: absolute;
     color: #ffffff90;
-    border: 1px solid transparent;
     transition: all .3s, color .1s;
     z-index: 1;
     inset: 0;
@@ -361,7 +361,7 @@ button[class] {
                 transition: all .3s, color .1s;
             }
             &[search] {
-                transform: translateX(40px);
+                translate: 40px -1px;
             }
             &[enter] {
                 opacity: 0;
@@ -397,7 +397,7 @@ button[class] {
             & > button {
                 font-size: 17px;
                 border-radius: 10px;
-                transform: none;
+                translate: none;
                 &::before {
                     scale: 1;
                 }
@@ -408,6 +408,7 @@ button[class] {
             }
         }
         &.full {
+            background: #000;
             & > .result {
                 opacity: 1;
             }
@@ -498,7 +499,7 @@ button[class] {
         }
     }
     #song.little ~ & > .row > button {
-        transform: none;
+        translate: none;
     }
 }
 :host > .loading {
@@ -583,16 +584,26 @@ button[class] {
     & > button {
         position: absolute;
         &.fa-gear {
-            right: 50px;
+            right: 10px;
+            opacity: 0;
+            pointer-events: none;
         }
         &.fa-list {
             right: 10px;
+            #song.little ~ & {
+                top: 100%;
+            }
         }
         &.fa-angle-up {
             position: absolute;
             left: 10px;
-            #song.little ~ & {
-                top: 100%;
+        }
+        #song.little ~ & {
+            top: 100%;
+            &.fa-gear {
+                top: 10px;
+                opacity: 1;
+                pointer-events: auto;
             }
         }
     }
