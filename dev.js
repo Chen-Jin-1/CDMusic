@@ -9,8 +9,13 @@ function h(tn = 'span', props, childs, style, parent, attrs, events) {
     parent?.appendChild(e);
     return e;
 }
-const host = h("div", { id: 'cdm-host' }),
+let host, shadow;
+if (location.host && !location.host === "cdmsc.chen-jin.dpdns.org") {
+    host = h("div", { id: 'cdm-host' });
     shadow = host.attachShadow({ mode: 'open' });
+} else {
+    host = shadow = document.body;
+}
 document.head.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//cdmsc.chen-jin.dpdns.org/top.css'
@@ -195,8 +200,8 @@ window._cdmsc_audio?.pause();
 window._cdmsc_ifr?.remove();
 let playing = false,
     lrc = [],
-    lrcEls,
-    lrci,
+    lrcEls = [],
+    lrci = -1,
     ifr = window._cdmsc_ifr = document.head.appendChild(h('iframe')),
     audio = window._cdmsc_audio = ifr.contentWindow.document.body.appendChild(new Audio()),
     sl = {
@@ -215,7 +220,7 @@ let playing = false,
     srst,
     blobMap = {},
     playlist = [],
-    playi = 0,
+    playi = -1,
     plel = {},
     ende,
     songMap = {};
@@ -229,7 +234,7 @@ const songEl = h('div', {
         className: 'ing fail'
     }, [
         sl.pic = h('img', {
-            alt: '专辑图',
+            alt: 'CDMusic 图标',
             src: '//m.ccw.site/works-covers/cdmusic-icon-v3.1.svg'
         }),
         sl.songname = h('span', {
@@ -285,7 +290,10 @@ function searchback() {
     searchBox.e.className = "search";
     searchBox.b.className = "fa-solid fa-search";
     searchBox.f.className = "fa-solid fa-arrow-right";
-    requestAnimationFrame(() => searchBox.s.innerHTML = "");
+    setTimeout(() => {
+        searchBox.s.innerHTML = "";
+        searchBox.fr.innerHTML = "";
+    }, 300);
     sbac?.abort();
     clearTimeout(sbptimer);
     searchBox.i.value = '';
@@ -308,7 +316,10 @@ searchBox.e = shadow.appendChild(h('div', { className: 'search' }, [
         }),
         searchBox.i = h('input', {
             placeholder: '输入歌名',
-            onkeydown: e => e.key === "Enter" && searchBox.f.click() || 1,
+            onkeydown: e => e.key === "Enter"
+                ? searchBox.f.click()
+                : e.key === "Escape" && searchBox.e.className !== "search" && searchBox.b.click()
+            || 1,
         }),
         searchBox.f = fa('arrow-right', 'button', {
             onclick: function(e) {
@@ -324,12 +335,7 @@ searchBox.e = shadow.appendChild(h('div', { className: 'search' }, [
         }),
     ]),
     searchBox.s = h('div', { className: 'sug' }),
-    searchBox.fr = h('div', { className: 'result searching null' }, [
-        searchBox.fta = h('table', null, [
-            h('thead', { innerHTML: `<tr><th>歌名</th><th>歌手</th><th>专辑</th><th>时长</th></tr>` }),
-            searchBox.rb = h('tbody'),
-        ]),
-    ])
+    searchBox.fr = h('div', { className: 'result searching null' })
 ]));
 searchBox.b.setAttribute('search', '');
 searchBox.f.setAttribute('enter', '');
@@ -438,7 +444,6 @@ function req(_url, body, opt, _method = 'get', responseType = "json", gm) {
         return opt?.r ? r : r.then(d => d[responseType]());
     }
 }
-
 function sug(kw = searchBox.i.value.trim()) {
     if (!kw) return searchBox.s.innerHTML = "";
     sbptimer = setTimeout(() => {
@@ -486,13 +491,19 @@ function toSong(platfrom, song, close) {
         const { id } = song, sid = 'cm_' + id;
         songMap[sid] || (songMap[sid] = {});
         function det(d) {
-            const fee = d.fee, _u = d.al.picUrl, upth = `p${new URL(_u).pathname}`
+            const fee = d.fee,
+                _u = d.al.picUrl,
+                upth = `p${new URL(_u).pathname}`,
+                singers = d.ar.map(i => i.name).join(" / ");
             function setPicUrl(u) {
                 sl.pic.src = u;
+                sl.pic.alt = d.al.name;
                 layer.style.backgroundImage = `url('${u}')`;
                 getImageColor(u).then(c => {
-                    songEl.style.backgroundColor = `rgb(${c.map(i => i * .5)})`;
+                    const darkc = c.map(i => i * .5);
+                    songEl.style.backgroundColor = `rgb(${darkc})`;
                     sl.pic.style.boxShadow = `0 0 50px rgb(${c})`;
+                    host.style.setProperty('--dark-bg', `rgba(${darkc},.2)`);
                 });
             }
             if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
@@ -502,6 +513,15 @@ function toSong(platfrom, song, close) {
                     const bu = URL.createObjectURL(b);
                     blobMap[upth] = bu;
                     setPicUrl(bu);
+                    playi++;
+                    renderpl({
+                        pic: bu,
+                        name: d.name,
+                        al: d.al.name,
+                        singers,
+                        id,
+                        plan: platfrom,
+                    }, 1);
                 });
             sl.songname.textContent = d.name;
             sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
@@ -510,7 +530,7 @@ function toSong(platfrom, song, close) {
                 className: 'vip',
                 textContent: fee == 1 ? 'VIP' : '付费'
             }));
-            document.title = `${d.name} - ${d.ar.map(i => i.name).join(" / ")} - CDMusic`;
+            document.title = `${d.name} - ${singers} - CDMusic`;
             if (fee == 4) {
                 sl.e.className = "ing fail";
                 throw cdmodal.alert("该歌曲需单独付费，暂不支持播放", "CDMusic");
@@ -520,7 +540,7 @@ function toSong(platfrom, song, close) {
                 : '//music.163.com/song/media/outer/url?id='
             ) + d.id;
         }
-        songMap[sid]
+        songMap[sid].d
             ? det(songMap[sid].d)
             : req("//zm.wwoyun.cn/song/detail", { ids: song.id }, { signal })
                 .then(rst => {
@@ -528,16 +548,16 @@ function toSong(platfrom, song, close) {
                     if (!d.name) console.error(d), cdmodal.alert("响应出错");
                     det(songMap[sid].d = d);
                 });
-        function lrc(d) {
+        function lcb(d) {
             lrc = parselrc(d.lrc.lyric, d.tlyric?.lyric);
             createlrc();
         }
-        songMap[sid]
-            ? lrc(songMap[sid].l)
+        songMap[sid].l
+            ? lcb(songMap[sid].l)
             : req("//zm.wwoyun.cn/lyric", { id: song.id }, { signal })
                 .then(d => {
                     if (!d.lrc) console.error(d), cdmodal.alert("处理歌词出错");
-                    lrc(songMap[sid].l = d);
+                    lcb(songMap[sid].l = d);
                 });
     }
 }
@@ -584,13 +604,19 @@ function fsea() {
         keywords: input.value.trim(),
     })
         .then(r => {
-            searchBox.rb.replaceChildren(...r.result.songs.map(s => h('tr', {
+            searchBox.fr.replaceChildren(...r.result.songs.map(s => h('div', {
                 onclick: e => toSong("cm", s, 1)
             }, [
-                h('td', { textContent: s.name }),
-                h('td', { textContent: s.artists.map(a => a.name).join(" / ") }),
-                h('td', { textContent: s.album.name }),
-                h('td', { textContent: formatTime(s.duration / 1000, 0, 1) }),
+                s.name,
+                h('span', {
+                    textContent: s.artists.map(a => a.name).join(" / "),
+                }),
+                h('span', {
+                    textContent: `《${s.album.name}》`,
+                }),
+                h('span', {
+                    textContent: formatTime(s.duration / 1000, 0, 1),
+                }),
             ])));
             searchBox.fr.className = "result";
         });
@@ -614,13 +640,47 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.se
         sl.songname.addEventListener('click', rsn, { once: 1 });
     }}));
 
-;(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
+location.host && location.host !== "cdmsc.chen-jin.dpdns.org" &&
+(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
     ? document.body
     : location.host === "www.ccw.site" && rt.isPlayerOnly
         ? document.querySelector('.workTabs-1dkUq')
         : rt.renderer.canvas.parentNode
 ).appendChild(host);
 
+function renderpl(adds, onlypush, save) {
+    function cpd(d, i) {
+        const c = [
+            h('img', {
+                alt: d.al,
+                src: d.pic,
+            }),
+            h('div', { textContent: d.name }, [
+                h('span', { textContent: d.singers })
+            ]),
+        ];
+        debugger;
+        i === playi && c.unshift(h('div', { className: 'current fa-solid fa-play' }));
+        return h("div", { onclick: () => toSong(d.plan, d) }, c);
+    }
+    if (adds) {
+        const _ = playlist.findIndex(i => i.id === adds.id);
+        if (_ !== -1) {
+            lrci === _;
+            return renderpl();
+        }
+        playlist.push(adds);
+        if (onlypush) {
+            plel.querySelector('.current')?.remove();
+            return plel.appendChild(cpd(adds, playlist.length - 1));
+        }
+    }
+    else plel.replaceChildren(...playlist.map(cpd));
+}
+
+
+
+//////////// 楚河汉界
 const loading = h('div', { className: 'loading' }, [
     h('img', { src: '//m.ccw.site/works-covers/cdmusic-icon-v3.1.svg' }),
     h('div', null, [
