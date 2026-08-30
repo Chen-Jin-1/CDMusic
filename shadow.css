@@ -225,7 +225,6 @@ button[class] {
     &.little {
         top: calc(100% - 50px);
         align-items: center;
-        /* overflow: hidden; */
         & > #song-left {
             width: 100%;
             height: 100%;
@@ -319,6 +318,19 @@ button[class] {
                     opacity: .5;
                     pointer-events: none;
                 }
+            }
+        }
+    }
+    & > #playlist {
+        position: absolute;
+        inset: 0 0 0 100%;
+        border-left: 1px solid transparent;
+        &.opened {
+            left: 40%;
+            background: #00000070;
+            border-left-color: #ffffff70;
+            #song-right:has(+ &) {
+                opacity: 0;
             }
         }
     }

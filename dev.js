@@ -1,4 +1,4 @@
-const version = 'v1.1.6';
+const version = 'v1.1.7 Alpha 1';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -70,7 +70,7 @@ cdmodal.importSettings({
             },
             {
                 "type": "text",
-                "label": "v1.1.5 (2026/8/28)",
+                "label": "v1.1.5 (2026/8/29)",
                 "description": "优化网页版\nCSS 采用外联样式表\n打字时不显示搜索建议\n修复 CCW 版 Alert 不显示问题"
             },
             {
@@ -207,8 +207,18 @@ let playing = false,
     sr = {},
     searchBox = {},
     layer,
+    sbptimer,
+    sbac,
+    loads,
     nscroll = 1,
-    blobMap = {};
+    songac,
+    srst,
+    blobMap = {},
+    playlist = [],
+    playi = 0,
+    plel = {},
+    ende,
+    songMap = {};
 const songEl = h('div', {
         id: 'song',
         // className: 'little',
@@ -269,6 +279,7 @@ const songEl = h('div', {
         ]),
     ]),
     sr.e = h('div', { id: 'song-right' }),
+    plel = h('div', { id: 'playlist' }),
 ], null, shadow);
 function searchback() {
     searchBox.e.className = "search";
@@ -378,6 +389,7 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
         lrcEls.forEach(i => i.className = "");
         if (!lrcEls[lrci]) return;
         lrcEls[lrci].className = "current";
+        audio.removeEventListener('play', ende);
         return sr.e.scrollTo({
             top: Math.max(0, lrcEls[lrci].offsetTop - (sr.e.clientHeight / 2)),
             behavior: 'smooth'
@@ -394,11 +406,10 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
         });
     }
 }
-createlrc();
 audio.onended = () => {
     lrci = -1;
-    audio.addEventListener("play", e => {
-        lrcEls.className = "";
+    audio.addEventListener("play", ende = e => {
+        lrcEls.forEach(i => i.className = "");
         nscroll = 1;
         sr.e.scrollTo({
             top: 0,
@@ -428,7 +439,6 @@ function req(_url, body, opt, _method = 'get', responseType = "json", gm) {
     }
 }
 
-let sbptimer, sbac, loads;
 function sug(kw = searchBox.i.value.trim()) {
     if (!kw) return searchBox.s.innerHTML = "";
     sbptimer = setTimeout(() => {
@@ -455,7 +465,6 @@ searchBox.i.oninput = function(e) {
 }
 searchBox.i.addEventListener("compositionend", e => sug());
 const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.crossOrigin='anonymous';img.src=imageUrl;img.onload=function(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const size=100;canvas.width=size;canvas.height=size;ctx.drawImage(img,0,0,size,size);const imageData=ctx.getImageData(0,0,size,size);const data=imageData.data;const pixelArray=[];for(let i=0;i<data.length;i+=4){pixelArray.push([data[i],data[i+1],data[i+2]])}function medianCut(colors,depth){if(colors.length<=8||depth===0){const avg=colors.reduce((acc,c)=>[acc[0]+c[0],acc[1]+c[1],acc[2]+c[2]],[0,0,0]);return avg.map(v=>Math.round(v/colors.length))}let maxRange=-1;let channel=0;for(let c=0;c<3;c++){const min=Math.min(...colors.map(p=>p[c]));const max=Math.max(...colors.map(p=>p[c]));if(max-min>maxRange){maxRange=max-min;channel=c}}colors.sort((a,b)=>a[channel]-b[channel]);const mid=Math.floor(colors.length/2);const left=colors.slice(0,mid);const right=colors.slice(mid);const leftAvg=medianCut(left,depth-1);const rightAvg=medianCut(right,depth-1);return leftAvg.map((v,i)=>Math.round((v+rightAvg[i])/2))}const dominantRgb=medianCut(pixelArray,6);const color=dominantRgb;callback(color)};img.onerror=e=>{throw e}});
-let songac;
 function toSong(platfrom, song, close) {
     playc(0);
     songac?.abort();
@@ -468,55 +477,68 @@ function toSong(platfrom, song, close) {
     }, { once: 1 });
     audio.addEventListener("error", e => audio.src && (sl.e.className = "ing fail"), { once: 1 });
     if (close) {
+        sl.e.className = "ing";
         searchBox.b.className === "fa-solid fa-close";
         searchBox.b.click();
         searchBox.e.className === "search";
     }
     if (platfrom === "cm") {
-        sl.e.className = "ing";
-        req("//zm.wwoyun.cn/song/detail", { ids: song.id }, { signal })
-            .then(rst => {
-                const d = rst.songs[0], fee = d.fee, _u = d.al.picUrl, upth = `p${new URL(_u).pathname}`;
-                if (!d.name) console.error(d), cdmodal.alert("响应出错");
-                function setPicUrl(u) {
-                    sl.pic.src = u;
-                    layer.style.backgroundImage = `url('${u}')`;
-                    getImageColor(u).then(c => {
-                        songEl.style.backgroundColor = `rgb(${c.map(i => i * .5)})`;
-                        sl.pic.style.boxShadow = `0 0 50px rgb(${c})`;
-                    });
-                }
-                if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
-                else fetch(`${_u}?param=500x500`, { signal })
-                    .then(r => r.blob())
-                    .then(b => {
-                        const bu = URL.createObjectURL(b);
-                        blobMap[upth] = bu;
-                        setPicUrl(bu);
-                    });
-                sl.songname.textContent = d.name;
-                sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
-                sl.songname.appendChild(sl.singers);
-                (fee == 1 || fee == 4) && sl.songname.appendChild(h('div', {
-                    className: 'vip',
-                    textContent: fee == 1 ? 'VIP' : '付费'
-                }));
-                document.title = `${d.name} - ${d.ar.map(i => i.name).join(" / ")} - CDMusic`;
-                if (fee == 4) {
-                    sl.e.className = "ing fail";
-                    throw cdmodal.alert("该歌曲需单独付费，暂不支持播放", "CDMusic");
-                }
-                audio.src = (fee == 1
-                    ? '//api.qijieya.cn/meting/?type=url&id='
-                    : '//music.163.com/song/media/outer/url?id='
-                ) + d.id;
-            }),
-        req("//zm.wwoyun.cn/lyric", { id: song.id }, { signal })
-            .then(d => {
-                if (!d.lrc) console.error(d), cdmodal.alert("处理歌词出错");
-                lrc = parselrc(d.lrc.lyric, d.tlyric?.lyric);
-                createlrc();
-            })
+        const { id } = song, sid = 'cm_' + id;
+        songMap[sid] || (songMap[sid] = {});
+        function det(d) {
+            const fee = d.fee, _u = d.al.picUrl, upth = `p${new URL(_u).pathname}`
+            function setPicUrl(u) {
+                sl.pic.src = u;
+                layer.style.backgroundImage = `url('${u}')`;
+                getImageColor(u).then(c => {
+                    songEl.style.backgroundColor = `rgb(${c.map(i => i * .5)})`;
+                    sl.pic.style.boxShadow = `0 0 50px rgb(${c})`;
+                });
+            }
+            if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
+            else fetch(`${_u}?param=500x500`, { signal })
+                .then(r => r.blob())
+                .then(b => {
+                    const bu = URL.createObjectURL(b);
+                    blobMap[upth] = bu;
+                    setPicUrl(bu);
+                });
+            sl.songname.textContent = d.name;
+            sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
+            sl.songname.appendChild(sl.singers);
+            (fee == 1 || fee == 4) && sl.songname.appendChild(h('div', {
+                className: 'vip',
+                textContent: fee == 1 ? 'VIP' : '付费'
+            }));
+            document.title = `${d.name} - ${d.ar.map(i => i.name).join(" / ")} - CDMusic`;
+            if (fee == 4) {
+                sl.e.className = "ing fail";
+                throw cdmodal.alert("该歌曲需单独付费，暂不支持播放", "CDMusic");
+            }
+            audio.src = (fee == 1
+                ? '//api.qijieya.cn/meting/?type=url&id='
+                : '//music.163.com/song/media/outer/url?id='
+            ) + d.id;
+        }
+        songMap[sid]
+            ? det(songMap[sid].d)
+            : req("//zm.wwoyun.cn/song/detail", { ids: song.id }, { signal })
+                .then(rst => {
+                    const d = rst.songs[0];
+                    if (!d.name) console.error(d), cdmodal.alert("响应出错");
+                    det(songMap[sid].d = d);
+                });
+        function lrc(d) {
+            lrc = parselrc(d.lrc.lyric, d.tlyric?.lyric);
+            createlrc();
+        }
+        songMap[sid]
+            ? lrc(songMap[sid].l)
+            : req("//zm.wwoyun.cn/lyric", { id: song.id }, { signal })
+                .then(d => {
+                    if (!d.lrc) console.error(d), cdmodal.alert("处理歌词出错");
+                    lrc(songMap[sid].l = d);
+                });
     }
 }
 
@@ -549,8 +571,7 @@ function parselrc(lrc, tlylrc) {
     });
 }
 
-let srst;
-sr.e.onwheel = e => {
+sr.e.ontouchend = sr.e.onwheel = e => {
     clearTimeout(srst);
     nscroll = 0;
     srst = setTimeout(() => updatelrc(0, null, nscroll = 1), 3000);
@@ -574,9 +595,10 @@ function fsea() {
             searchBox.fr.className = "result";
         });
 }
-
 const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.settings("CDMusic 设置") })),
-    playlist = shadow.appendChild(fa('list', 'button', { onclick: () => 1 })),
+    plbtn = shadow.appendChild(fa('list', 'button', { 
+        onclick: () => plel.className = plel.className === "opened" ? '' : 'opened',
+    })),
     sfold = shadow.appendChild(fa("angle-up", "button", { onclick: () => {
         let scl;
         songEl.className = "little";
