@@ -1,4 +1,4 @@
-const version = 'v1.1.6 Alpha 3';
+const version = 'v1.1.6 Alpha 4';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -200,14 +200,12 @@ let playing = false,
     sr = {},
     searchBox = {},
     layer,
-    nscroll = 1,
-    sfold;
+    nscroll = 1;
 const songEl = h('div', {
         id: 'song',
         // className: 'little',
     }, [
     layer = h('div', { className: 'layer' }),
-    // sfold = fa("angle-down"),
     sl.e = h('div', {
         id: 'song-left',
         className: 'ing fail'
@@ -284,6 +282,7 @@ searchBox.e = shadow.appendChild(h('div', { className: 'search' }, [
                     else {
                         searchBox.e.className = "search opened";
                         this.className = "fa-solid fa-close";
+                        searchBox.i.focus();
                     }
                 }
             },
@@ -322,7 +321,7 @@ function formatTime(sec = audio.currentTime, updateAll, onlyString) {
         secs = s % 60,
         str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     if (updateAll) sl.t.load.textContent = formatTime(audio.duration, 0, 1);
-    else if (!onlyString) sl.t.play.textContent = str;
+    else if (!onlyString && sl.t.play.textContent != str) sl.t.play.textContent = str;
     return str;
 }
 function dragProgress(e) {
@@ -331,27 +330,19 @@ function dragProgress(e) {
     x = Math.max(0, Math.min(rect.width, x));
     const percent = x / rect.width;
     audio.currentTime = percent * audio.duration;
-    spaf(percent, 0);
     updatelrc(0, null, 1);
 }
-let afid;
-function spaf(_percent, af = 1, isaf = 0) {
-    if (isaf && audio.paused) return;
-    const percent = _percent ?? audio.currentTime / audio.duration;
+function updateUI() {
+    const currentTime = audio.currentTime;
+    const percent = currentTime / audio.duration;
     sl.p.play.style.width = (percent * 100) + '%';
-    formatTime(percent * audio.duration);
+    formatTime(currentTime);
     updatelrc();
-    if (af) afid = requestAnimationFrame(() => spaf(null, 1, 1));
 }
+audio.ontimeupdate = e => updateUI();
 function playc(play = !playing, noaudio) {
     const btn = sl.btns.play;
-    if (playing = play) {
-        btn.className = "fa-solid fa-pause";
-        cancelAnimationFrame(afid);
-        spaf(null, 1);
-    } else {
-        btn.className = "fa-solid fa-play";
-    }
+    btn.className = `fa-solid fa-${(playing = play) ? 'pause' : 'play'}`;
     !noaudio && audio[play ? 'play' : 'pause']();
 }
 audio.onplay = e => playc(1, 1);
@@ -365,7 +356,6 @@ function createlrc() {
         onclick: e => {
             audio.currentTime = lrc[idx].time;
             updatelrc(0, idx, 1);
-            spaf(null, 0);
         },
     }))));
     requestAnimationFrame(() => el.scrollTo({
@@ -452,7 +442,6 @@ const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.c
 let songac;
 function toSong(platfrom, song, close) {
     playc(0);
-    audio.readyState !== 0 && spaf(0, 0);
     songac?.abort();
     songac = new AbortController();
     const signal = songac.signal;
@@ -567,7 +556,19 @@ function fsea() {
 }
 
 const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.settings("CDMusic 设置") })),
-    playlist = shadow.appendChild(fa('list', 'button', { onclick: () => 1 }));
+    playlist = shadow.appendChild(fa('list', 'button', { onclick: () => 1 })),
+    sfold = shadow.appendChild(fa("angle-up", "button", { onclick: () => {
+        let scl;
+        songEl.className = "little";
+        sl.t.play.after(sl.p.e);
+        function rsn() {
+            songEl.className = "";
+            sl.songname.after(sl.p.e);
+            songEl.removeEventListener('click', scl);
+        }
+        songEl.addEventListener('click', scl = e => [songEl, sl.e, sl.pic].includes(e.target) && rsn());
+        sl.songname.addEventListener('click', rsn, { once: 1 });
+    }}));
 
 ;(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
     ? document.body
@@ -601,10 +602,7 @@ await Promise.all([
 loading.classList.add("out");
 setTimeout(() => loading.remove(), 300);
 document.onvisibilitychange = e => {
-    if (document.visibilityState === "hidden") {
-        cancelAnimationFrame(afid);
-    } else if (sl.e.className !== "ing") {
+    if (document.visibilityState === "visible" && sl.e.className !== "ing") {
         nscroll && updatelrc(0, null, 1);
-        spaf();
     }
 }

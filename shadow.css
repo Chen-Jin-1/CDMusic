@@ -28,15 +28,20 @@ button {
 }
 
 button[class] {
-    width: 40px;
-    height: 40px;
-    font-size: 30px;
-    border-radius: 25px;
     display: grid;
     place-items: center;
     flex: 0 0 auto;
     margin: 0 auto;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    color: #ffffff90;
+    top: 10px;
+    z-index: 1;
+    border-radius: 50%;
     &:hover {
+        color: #fff;
         background: #ffffff70;
         cursor: pointer;
         &::before {
@@ -109,11 +114,17 @@ button[class] {
         }
         & > .btns {
             display: flex;
+            & > button {
+                color: #fff;
+                width: 40px;
+                height: 40px;
+                font-size: 30px;
+            }
             & > #btn-play {
                 transform: scale(1.3);
             }
         }
-        & > .progress {
+        & .progress {
             padding: 5px 0;
             cursor: pointer;
             & > .load {
@@ -158,7 +169,7 @@ button[class] {
             }
         }
         &.ing {
-            &:not(.fail) > .progress {
+            &:not(.fail) .progress {
                 overflow-x: hidden;
                 pointer-events: none;
                 & > .load {
@@ -166,7 +177,7 @@ button[class] {
                     animation: song-load 1s infinite;
                 }
             }
-            & > .progress > .load > .play, & > .time, &.fail > .progress {
+            & .progress > .load > .play, & > .time, &.fail .progress {
                 opacity: 0;
                 pointer-events: none;
             }
@@ -215,9 +226,6 @@ button[class] {
         top: calc(100% - 50px);
         align-items: center;
         /* overflow: hidden; */
-        & > #song-right {
-            width: 0;
-        }
         & > #song-left {
             width: 100%;
             height: 100%;
@@ -231,11 +239,10 @@ button[class] {
                 height: 70%;
                 margin-bottom: 0;
                 flex-shrink: 0;
-                border-radius: 8%;
+                border-radius: 10%;
             }
-            
             & > .song-name {
-                width: 30%;
+                width: 50%;
                 font-size: 13px;
                 white-space: nowrap;
                 overflow-x: hidden;
@@ -255,12 +262,8 @@ button[class] {
                     text-overflow: ellipsis;
                 }
             }
-            
             & .progress {
-                flex: 1;
-                min-width: 80px;
-                max-width: 300px;
-                padding: 3px 0;
+                margin: auto 1%;
                 width: 100%;
                 & > .load {
                     height: 2px;
@@ -271,7 +274,6 @@ button[class] {
                         right: -2px;
                     }
                 }
-                
                 &:hover > .load {
                     height: 3px;
                     .dot {
@@ -280,45 +282,38 @@ button[class] {
                     }
                 }
             }
-            
-            /* 时间 */
             & > .time {
-                font-size: 11px;
+                font-size: 12px;
                 margin-bottom: 0;
                 min-width: fit-content;
             }
-            
-            /* 按钮 */
             & > .btns {
                 flex-shrink: 0;
                 gap: 8px;
                 align-items: center;
-                
+                scale: .9;
                 & > #btn-play {
-                    transform: scale(1.1);
+                    transform: scale(1.2);
                 }
             }
         }
-        
-        /* 加载状态适配 */
+        & > #song-right {
+            width: 0;
+        }
         &.ing {
             & > #song-left {
-                & > .progress {
+                & .progress {
                     overflow-x: hidden;
                     pointer-events: none;
-                    
                     & > .load {
                         width: 20%;
                         animation: song-load 1s infinite;
                     }
                 }
-                
-                & > .progress > .load > .play,
-                & > .time {
+                & .progress > .load > .play, & > .time {
                     opacity: 0;
                     pointer-events: none;
                 }
-                
                 & > .btns > #btn-play {
                     opacity: .5;
                     pointer-events: none;
@@ -329,20 +324,20 @@ button[class] {
 }
 .search {
     position: absolute;
-    left: 10px;
-    right: 10px;
-    top: 10px;
-    height: 30px;
     color: #ffffff90;
     border: 1px solid transparent;
     transition: all .3s, color .1s;
     z-index: 1;
+    inset: 0;
+    padding: 10px;
+    height: 0;
     & > .row {
         display: flex;
         position: relative;
         border-radius: 10px;
         border: 1px solid transparent;
         & > input {
+            font-size: 13px;
             position: absolute;
             background: none;
             border: none;
@@ -358,7 +353,6 @@ button[class] {
             }
         }
         & > button {
-            zoom: .7;
             margin: 0;
             .opened > &, &:hover {
                 color: #fff;
@@ -366,12 +360,16 @@ button[class] {
             &::before {
                 transition: all .3s, color .1s;
             }
-        }
-        & > [enter] {
-            opacity: 0;
-            position: absolute;
-            right: 0;
-            pointer-events: none;
+            &[search] {
+                transform: translateX(40px);
+            }
+            &[enter] {
+                opacity: 0;
+                position: absolute;
+                right: 0;
+                pointer-events: none;
+                top: 0;
+            }
         }
     }
     & > .sug {
@@ -383,6 +381,9 @@ button[class] {
         z-index: 1;
     }
     &.opened {
+        height: 100%;
+        padding: 10px;
+        background: #00000070;
         & > .row {
             background: #ffffff33;
             border-color: #ffffff70;
@@ -394,8 +395,9 @@ button[class] {
                 opacity: 1;
             }
             & > button {
-                font-size: 20px;
+                font-size: 17px;
                 border-radius: 10px;
+                transform: none;
                 &::before {
                     scale: 1;
                 }
@@ -406,10 +408,6 @@ button[class] {
             }
         }
         &.full {
-            inset: 0;
-            padding: 10px;
-            height: 100%;
-            background: #000;
             & > .result {
                 opacity: 1;
             }
@@ -423,11 +421,12 @@ button[class] {
             backdrop-filter: blur(3px);
             border-top: 0;
             border-radius: 0 0 10px 10px;
-            div {
+            & > div {
                 margin: 5px 0;
                 padding: 3px 4px;
                 border-radius: 10px;
                 cursor: pointer;
+                text-shadow: 0 0 5px #ffffff30;
                 &:hover {
                     background: #ffffff30;
                 }
@@ -471,11 +470,14 @@ button[class] {
                     &:hover {
                         background: #ffffff33;
                     }
-                    & > td:first-child {
-                        border-radius: 6px 0 0 6px;
-                    }
-                    & > td:last-child {
-                        border-radius: 0 6px 6px 0;
+                    & > td {
+                        padding: 3px 0;
+                        &:first-child {
+                            border-radius: 6px 0 0 6px;
+                        }
+                        &:last-child {
+                            border-radius: 0 6px 6px 0;
+                        }
                     }
                 }
             }
@@ -494,6 +496,9 @@ button[class] {
                 font-size: 20px;
             }
         }
+    }
+    #song.little ~ & > .row > button {
+        transform: none;
     }
 }
 :host > .loading {
@@ -574,22 +579,21 @@ button[class] {
     opacity: 0;
     pointer-events: none;
 }
-:host > button {
-    font-size: 20px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    color: #ffffff90;
-    position: absolute;
-    top: 10px;
-    z-index: 1;
-    &:hover {
-        color: #fff;
-    }
-    &.fa-gear {
-        right: 50px;
-    }
-    &.fa-list {
-        right: 10px;
+:host {
+    & > button {
+        position: absolute;
+        &.fa-gear {
+            right: 50px;
+        }
+        &.fa-list {
+            right: 10px;
+        }
+        &.fa-angle-up {
+            position: absolute;
+            left: 10px;
+            #song.little ~ & {
+                top: 100%;
+            }
+        }
     }
 }
