@@ -1,5 +1,5 @@
 body { margin: 0; }
-:host, #cdm-host {
+:host, [id="cdm-host"] {
     position: absolute;
     inset: 0;
     color: #fff;
@@ -35,26 +35,7 @@ body { margin: 0; }
             }
         }
     }
-}
-
-* {
-    user-select: none;
-    -webkit-user-drag: none;
-    -webkit-tap-highlight-color: transparent;
-    box-sizing: border-box;
-    font-family: 'PingFang';
-    &, &::before, &::after {
-        transition-duration: .3s;
-    }
-}
-
-button {
-    border: none;
-    outline: none;
-    cursor: pointer;
-    background: none;
-    color: inherit;
-    &[class] {
+    button[class] {
         display: grid;
         place-items: center;
         flex: 0 0 auto;
@@ -76,6 +57,25 @@ button {
             }
         }
     }
+}
+
+* {
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+    font-family: 'PingFang';
+    &, &::before, &::after {
+        transition-duration: .3s;
+    }
+}
+
+button {
+    border: none;
+    outline: none;
+    cursor: pointer;
+    background: none;
+    color: inherit;
 }
 
 #song {
@@ -118,7 +118,7 @@ button {
             word-break: break-word;
             & > .vip {
                 animation: show .3s;
-                margin-left: auto;
+                margin: auto 0 auto auto;
                 background: #fff5;
                 padding: 0 4px;
                 font-size: 12px;
@@ -147,6 +147,10 @@ button {
                 width: 40px;
                 height: 40px;
                 font-size: 30px;
+                &[dis] {
+                    opacity: .5;
+                    pointer-events: none;
+                }
             }
             & > #btn-play {
                 transform: scale(1.3);
@@ -343,6 +347,9 @@ button {
                 opacity: 0;
                 transform: translateX(100%);
             }
+            .little ~ & {
+                transform: translateY(100%);
+            }
         }
         & > div {
             font-size: 16px;
@@ -377,6 +384,9 @@ button {
                     content: "\f01e";
                     rotate: 360deg;
                 }
+                & > button {
+                    opacity: 1;
+                }
             }
             & > .current {
                 border-radius: 20%;
@@ -388,14 +398,35 @@ button {
                 place-items: center;
                 color: #fffa;
                 animation: show 0.3s;
-                &[remove] {
+                &.remove {
                     transform: translateY(200%);
+                }
+                & > button {
+                    opacity: 0 !important;
+                    pointer-events: none;
+                }
+            }
+            & > button {
+                opacity: 0;
+                margin-right: 5px;
+                &:hover {
+                    color: #f00;
+                    background: #f778;
                 }
             }
         }
-        &:empty::after {
+        &:not(div)::after {
             content: '（暂无播放）';
             margin: auto;
+        }
+        &.remove {
+            height: 0;
+            padding: 0;
+            margin: 0;
+            border-width: 0;
+        }
+        & > button {
+            display: none;
         }
     }
 }

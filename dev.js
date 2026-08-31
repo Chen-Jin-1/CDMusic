@@ -1,4 +1,4 @@
-const version = 'v1.1.7 Alpha 3';
+const version = 'v1.2.0';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -65,6 +65,11 @@ cdmodal.importSettings({
                 "type": "text",
                 "label": "版本日志"
             },
+            {
+                type: 'text',
+                label: 'v1.2.0 (2026/8/31)',
+                description: "完善歌曲列表\n本地存储数据"
+            }
             {
                 "type": "text",
                 "label": "v1.1.6 (2026/8/30)",
@@ -225,11 +230,9 @@ let playing = false,
     plel = {},
     ende,
     songMap = {},
-    csid;
-const songEl = h('div', {
-        id: 'song',
-        // className: 'little',
-    }, [
+    csid,
+    playt = 'repeat';
+const songEl = h('div', { id: 'song' }, [
     layer = h('div', { className: 'layer' }),
     sl.e = h('div', {
         id: 'song-left',
@@ -286,8 +289,12 @@ const songEl = h('div', {
         ]),
     ]),
     sr.e = h('div', { id: 'song-right' }),
-    plel = h('div', { id: 'playlist' }),
+    plel = h('div', { id: 'playlist' }, [
+        fa("repeat", "button"),
+    ]),
 ], null, shadow);
+sl.btns.bk.setAttribute('dis', '');
+sl.btns.fd.setAttribute('dis', '');
 function searchback() {
     searchBox.e.className = "search";
     searchBox.b.className = "fa-solid fa-search";
@@ -424,6 +431,10 @@ audio.onended = () => {
             behavior: 'smooth',
         });
     }, { once: 1 });
+    if (playt === "repeat") {
+        const s = playlist[(playi + 1) % playlist.length];
+        toSong(s.plan, s);
+    }
 };
 function req(_url, body, opt, _method = 'get', responseType = "json", gm) {
     const method = _method.toUpperCase(), url = (method === "GET" && body) ? `${_url}?${new URLSearchParams(body)}` : _url;
@@ -458,7 +469,7 @@ function sug(kw = searchBox.i.value.trim()) {
                 if (!result.order) return;
                 searchBox.s.replaceChildren(...result.songs.map(s => h('div', {
                     textContent: `${s.name} - ${s.artists.map(a => a.name).join(" / ")}`,
-                    onclick: () => toSong('cm', s, 1),
+                    onclick: () => toSong('cm', s, 1, 1),
                 })));
             });
     }, 700);
@@ -472,7 +483,7 @@ searchBox.i.oninput = function(e) {
 }
 searchBox.i.addEventListener("compositionend", e => sug());
 const getImageColor=imageUrl=>new Promise(callback=>{const img=new Image();img.crossOrigin='anonymous';img.src=imageUrl;img.onload=function(){const canvas=document.createElement('canvas');const ctx=canvas.getContext('2d');const size=100;canvas.width=size;canvas.height=size;ctx.drawImage(img,0,0,size,size);const imageData=ctx.getImageData(0,0,size,size);const data=imageData.data;const pixelArray=[];for(let i=0;i<data.length;i+=4){pixelArray.push([data[i],data[i+1],data[i+2]])}function medianCut(colors,depth){if(colors.length<=8||depth===0){const avg=colors.reduce((acc,c)=>[acc[0]+c[0],acc[1]+c[1],acc[2]+c[2]],[0,0,0]);return avg.map(v=>Math.round(v/colors.length))}let maxRange=-1;let channel=0;for(let c=0;c<3;c++){const min=Math.min(...colors.map(p=>p[c]));const max=Math.max(...colors.map(p=>p[c]));if(max-min>maxRange){maxRange=max-min;channel=c}}colors.sort((a,b)=>a[channel]-b[channel]);const mid=Math.floor(colors.length/2);const left=colors.slice(0,mid);const right=colors.slice(mid);const leftAvg=medianCut(left,depth-1);const rightAvg=medianCut(right,depth-1);return leftAvg.map((v,i)=>Math.round((v+rightAvg[i])/2))}const dominantRgb=medianCut(pixelArray,6);const color=dominantRgb;callback(color)};img.onerror=e=>{throw e}});
-function toSong(platfrom, song, close) {
+function toSong(platfrom, song, nplay = 1, close) {
     playc(0);
     songac?.abort();
     songac = new AbortController();
@@ -480,12 +491,12 @@ function toSong(platfrom, song, close) {
     audio.addEventListener("loadedmetadata", e => {
         formatTime(audio.currentTime, 1);
         sl.e.className = "";
-        playc(1);
+        nplay && playc(1);
     }, { once: 1 });
     audio.addEventListener("error", e => audio.src && (sl.e.className = "ing fail"), { once: 1 });
+    sl.p.play.style.width = "0";
+    sl.e.className = "ing";
     if (close) {
-        sl.p.play.style.width = "0";
-        sl.e.className = "ing";
         searchBox.b.className === "fa-solid fa-close";
         searchBox.b.click();
         searchBox.e.className === "search";
@@ -533,7 +544,7 @@ function toSong(platfrom, song, close) {
                 ? '//api.qijieya.cn/meting/?type=url&id='
                 : '//music.163.com/song/media/outer/url?id='
             ) + d.id;
-            csid = id;
+            csid = sid;
             renderpl({
                 pic: `${_u}?param=120x120`,
                 name: d.name,
@@ -541,6 +552,28 @@ function toSong(platfrom, song, close) {
                 singers,
                 sid,
                 plan: platfrom,
+                id,
+            });
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: d.name,
+                artist: singers,
+                artwork: [
+                    {
+                        src: `${_u}?param=96x96`,
+                        sizes: '96x96',
+                        type: 'image/jpeg'
+                    },
+                    {
+                        src: `${_u}?param=192x192`,
+                        sizes: '192x192',
+                        type: 'image/jpeg'
+                    },
+                    {
+                        src: `${_u}?param=512x512`,
+                        sizes: '512x512',
+                        type: 'image/jpeg'
+                    },
+                ]
             });
         }
         songMap[sid].d
@@ -608,7 +641,7 @@ function fsea() {
     })
         .then(r => {
             searchBox.fr.replaceChildren(...r.result.songs.map(s => h('div', {
-                onclick: e => toSong("cm", s, 1)
+                onclick: e => toSong("cm", s, 1, 1)
             }, [
                 s.name,
                 h('span', {
@@ -653,6 +686,7 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.se
 
 function renderpl(adds, i, save) {
     function cpd(d, i) {
+        let b, e;
         const c = [
             h('img', {
                 alt: d.al,
@@ -661,13 +695,22 @@ function renderpl(adds, i, save) {
             h('div', { textContent: d.name }, [
                 h('span', { textContent: d.singers })
             ]),
+            b = fa('trash', 'button', {
+                onclick: () => {
+                    playlist.splice(i, 1);
+                    playi > i && --playi;
+                    savels();
+                    e.className = 'remove';
+                    setTimeout(() => e.remove(), 300);
+                }
+            }),
         ];
         i === playi && c.unshift(h('div', { className: 'current fa-solid fa-play' }));
-        return h("div", { onclick: () => toSong(d.plan, d) }, c);
+        return e = h("div", { onclick: e => e.target !== b && toSong(d.plan, d) }, c);
     }
     function rmc(c = plel.querySelector('.current')) {
         if (c) {
-            c.setAttribute('remove', '');
+            c.className = 'current remove';
             setTimeout(() => c.remove(), 300);
         }
     }
@@ -678,15 +721,24 @@ function renderpl(adds, i, save) {
     }
     else playi = 0;
     if (adds) {
-        localStorage.playi = playi;
         rmc();
-        if (playi < playlist.length) return plel.children[playi].prepend(h('div', { className: 'current fa-solid fa-play' }));
+        if (playi < playlist.length) {
+            localStorage.playi = playi;
+            return plel.children[playi].prepend(h('div', { className: 'current fa-solid fa-play' }));
+        }
         playlist.push(adds);
-        localStorage.playlist = JSON.stringify(playlist);
+        savels();
+        sl.btns.bk.removeAttribute('dis');
+        sl.btns.fd.removeAttribute('dis');
         return plel.appendChild(cpd(adds, playlist.length - 1));
     }
     else plel.replaceChildren(...playlist.map(cpd));
 }
+const savels = () => Object.assign(localStorage, {
+    playi,
+    playlist: JSON.stringify(playlist),
+});
+
 
 
 
@@ -715,9 +767,27 @@ await Promise.all([
 ]);
 loading.classList.add("out");
 setTimeout(() => loading.remove(), 300);
+
+
+
 document.onvisibilitychange = e => {
     if (document.visibilityState === "visible" && sl.e.className !== "ing") {
         nscroll && updatelrc(0, null, 1);
     }
 }
 onresize = e => nscroll && updatelrc(0, null, 1);
+if (localStorage.playi) {
+    playi = +localStorage.playi;
+    playlist = JSON.parse(localStorage.playlist);
+    csid = localStorage.csid;
+    s = playlist[playi];
+    renderpl();
+    s && toSong(s.plan, s, 0);
+    if (playlist.length) sl.btns.bk.removeAttribute('dis'), sl.btns.fd.removeAttribute('dis');
+}
+sl.btns.bk.onclick = sl.btns.fd.onclick = function(e) {
+    const i = (this === sl.btns.fd ? playi + 1 : playi - 1) % playlist.length;
+    i < 0 && (i = playlist.length + i);
+    const s = playlist[i];
+    toSong(s.plan, s);
+}
