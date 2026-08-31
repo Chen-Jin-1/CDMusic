@@ -69,7 +69,7 @@ cdmodal.importSettings({
                 type: 'text',
                 label: 'v1.2.0 (2026/8/31)',
                 description: "完善歌曲列表\n本地存储数据"
-            }
+            },
             {
                 "type": "text",
                 "label": "v1.1.6 (2026/8/30)",
