@@ -1,4 +1,4 @@
-const version = 'v1.1.7 Alpha 1';
+const version = 'v1.1.7 Alpha 2';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -403,7 +403,7 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
     }
     const n = i + 1;
     if (time >= lrc[n]?.time - 0.15) {
-        lrci++;
+        ++lrci;
         lrcEls[i] && (lrcEls[i].className = "");
         lrcEls[n].className = "current";
         nscroll && sr.e.scrollTo({
@@ -506,22 +506,22 @@ function toSong(platfrom, song, close) {
                     host.style.setProperty('--dark-bg', `rgba(${darkc},.2)`);
                 });
             }
-            if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
+            const rp = b => (++playi, renderpl({
+                pic: b,
+                name: d.name,
+                al: d.al.name,
+                singers,
+                id,
+                plan: platfrom,
+            }, 1));
+            if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]) || rp(blobMap[upth]);
             else fetch(`${_u}?param=500x500`, { signal })
                 .then(r => r.blob())
                 .then(b => {
                     const bu = URL.createObjectURL(b);
                     blobMap[upth] = bu;
                     setPicUrl(bu);
-                    playi++;
-                    renderpl({
-                        pic: bu,
-                        name: d.name,
-                        al: d.al.name,
-                        singers,
-                        id,
-                        plan: platfrom,
-                    }, 1);
+                    rp(bu);
                 });
             sl.songname.textContent = d.name;
             sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
@@ -634,6 +634,7 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.se
             songEl.className = "";
             sl.songname.after(sl.p.e);
             songEl.style.cursor = '';
+            setTimeout(() => updatelrc(0, null, 1), 300);
             songEl.removeEventListener('click', scl);
         }
         songEl.addEventListener('click', scl = e => [songEl, sl.e, sl.pic].includes(e.target) && rsn());
@@ -648,7 +649,7 @@ location.host && location.host !== "cdmsc.chen-jin.dpdns.org" &&
         : rt.renderer.canvas.parentNode
 ).appendChild(host);
 
-function renderpl(adds, onlypush, save) {
+function renderpl(adds, nrr, save) {
     function cpd(d, i) {
         const c = [
             h('img', {
@@ -659,7 +660,6 @@ function renderpl(adds, onlypush, save) {
                 h('span', { textContent: d.singers })
             ]),
         ];
-        debugger;
         i === playi && c.unshift(h('div', { className: 'current fa-solid fa-play' }));
         return h("div", { onclick: () => toSong(d.plan, d) }, c);
     }
@@ -670,8 +670,12 @@ function renderpl(adds, onlypush, save) {
             return renderpl();
         }
         playlist.push(adds);
-        if (onlypush) {
-            plel.querySelector('.current')?.remove();
+        if (nrr) {
+            const c = plel.querySelector('.current');
+            if (c) {
+                c.setAttribute('remove', '');
+                setTimeout(() => c.remove(), 300);
+            }
             return plel.appendChild(cpd(adds, playlist.length - 1));
         }
     }
@@ -710,3 +714,4 @@ document.onvisibilitychange = e => {
         nscroll && updatelrc(0, null, 1);
     }
 }
+onresize = e => nscroll && updatelrc(0, null, 1);

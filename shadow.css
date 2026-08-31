@@ -3,7 +3,7 @@
     inset: 0;
     color: #fff;
     z-index: 0;
-    overflow: hidden;
+    overflow: clip;
     background: #000;
     margin: 0;
     & > button {
@@ -200,7 +200,7 @@ button[class] {
         }
         &.ing {
             &:not(.fail) .progress {
-                overflow-x: hidden;
+                overflow-x: clip;
                 pointer-events: none;
                 & > .load {
                     width: 20%;
@@ -275,7 +275,7 @@ button[class] {
                 width: 50%;
                 font-size: 13px;
                 white-space: nowrap;
-                overflow-x: hidden;
+                overflow-x: clip;
                 display: block;
                 text-overflow: ellipsis;
                 & > .vip {
@@ -288,7 +288,7 @@ button[class] {
                 & > .singers {
                     margin-bottom: 0;
                     display: block; 
-                    overflow: hidden;
+                    overflow: clip;
                     text-overflow: ellipsis;
                 }
             }
@@ -357,6 +357,9 @@ button[class] {
             background: #fff3;
             gap: 10px;
             cursor: pointer;
+            position: relative;
+            overflow: clip;
+            animation: show 0.3s;
             & > img {
                 border-radius: 20%;
                 width: 40px;
@@ -372,9 +375,9 @@ button[class] {
             }
             &:hover {
                 background: #fff5;
-            }
-            &:has(.current) {
-                pointer-events: none;
+                & > .current::before {
+                    content: "\f01e";
+                }
             }
             & > .current {
                 border-radius: 20%;
@@ -385,6 +388,9 @@ button[class] {
                 display: grid;
                 place-items: center;
                 color: #fffa;
+                &[remove] {
+                    transform: translateY(200%);
+                }
             }
         }
     }
@@ -564,7 +570,7 @@ button[class] {
     display: grid;
     justify-items: center;
     align-content: center;
-    overflow: hidden;
+    overflow: clip;
     z-index: 10;
     & > img {
         zoom: .7;
