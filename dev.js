@@ -780,7 +780,7 @@ if (localStorage.playi) {
     playi = +localStorage.playi;
     playlist = JSON.parse(localStorage.playlist);
     csid = localStorage.csid;
-    s = playlist[playi];
+    const s = playlist[playi];
     renderpl();
     s && toSong(s.plan, s, 0);
     if (playlist.length) sl.btns.bk.removeAttribute('dis'), sl.btns.fd.removeAttribute('dis');
