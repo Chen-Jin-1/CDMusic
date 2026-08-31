@@ -1,4 +1,4 @@
-const version = 'v1.1.7 Alpha 2';
+const version = 'v1.1.7 Alpha 3';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -9,13 +9,10 @@ function h(tn = 'span', props, childs, style, parent, attrs, events) {
     parent?.appendChild(e);
     return e;
 }
-let host, shadow;
-if (location.host && !location.host === "cdmsc.chen-jin.dpdns.org") {
-    host = h("div", { id: 'cdm-host' });
-    shadow = host.attachShadow({ mode: 'open' });
-} else {
-    host = shadow = document.body;
-}
+const host = h("div", { id: 'cdm-host' }),
+    shadow = location.host && !location.host === "cdmsc.chen-jin.dpdns.org"
+        ? host.attachShadow({ mode: 'open' })
+        : host;
 document.head.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//cdmsc.chen-jin.dpdns.org/top.css'
@@ -124,7 +121,6 @@ cdmodal.importSettings({
                 "description": "发布 CDMusic"
             }
         ],
-        "description": ""
     }
 });
 shadow.appendChild(h('link', {
@@ -132,13 +128,18 @@ shadow.appendChild(h('link', {
     href: '//use.fontawesome.com/releases/v7.3.1/css/all.css'
 }));
 const cdmcss = shadow.appendChild(h('style', { textContent: `
-*:not(.loading *) { display: none; }
-:host > .loading {
-    display: block;
+body {
+    margin: 0;
+    color: #fff;
+}
+*:not(.loading *, #cdm-host, body, :root) {
+    display: none;
+}
+.loading {
     position: absolute;
     inset: 0;
     background: #000;
-    display: grid;
+    display: grid !important;
     justify-items: center;
     align-content: center;
     overflow: hidden;
@@ -185,7 +186,7 @@ const cdmcss = shadow.appendChild(h('style', { textContent: `
         right: 0;
         width: 100px;
     }
-}` }))
+}` }));
 const shadowcssp = fetch("//cdmsc.chen-jin.dpdns.org/shadow.css")
     .then(r => r.text())
     .then(t => cdmcss.textContent = t);
@@ -223,7 +224,8 @@ let playing = false,
     playi = -1,
     plel = {},
     ende,
-    songMap = {};
+    songMap = {},
+    csid;
 const songEl = h('div', {
         id: 'song',
         // className: 'little',
@@ -271,14 +273,14 @@ const songEl = h('div', {
             sl.t.load = h('span', { className: 'load' })
         ]),
         h('div', { className: 'btns' }, [
-            sl.btns.bw = fa('step-backward', 'button', {
-                onclick: function(e) {}
+            sl.btns.bk = fa('step-backward', 'button', {
+                onclick: e => {},
             }),
             sl.btns.play = fa('play', 'button', {
-                onclick: () => playc(),
+                onclick: e => playc(),
                 id: 'btn-play'
             }),
-            sl.btns.bw = fa('step-forward', 'button', {
+            sl.btns.fd = fa('step-forward', 'button', {
                 onclick: function(e) {}
             }),
         ]),
@@ -482,6 +484,7 @@ function toSong(platfrom, song, close) {
     }, { once: 1 });
     audio.addEventListener("error", e => audio.src && (sl.e.className = "ing fail"), { once: 1 });
     if (close) {
+        sl.p.play.style.width = "0";
         sl.e.className = "ing";
         searchBox.b.className === "fa-solid fa-close";
         searchBox.b.click();
@@ -506,22 +509,13 @@ function toSong(platfrom, song, close) {
                     host.style.setProperty('--dark-bg', `rgba(${darkc},.2)`);
                 });
             }
-            const rp = b => (++playi, renderpl({
-                pic: b,
-                name: d.name,
-                al: d.al.name,
-                singers,
-                id,
-                plan: platfrom,
-            }, 1));
-            if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]) || rp(blobMap[upth]);
+            if (blobMap[upth]) blobMap[upth] !== sl.pic.src && setPicUrl(blobMap[upth]);
             else fetch(`${_u}?param=500x500`, { signal })
                 .then(r => r.blob())
                 .then(b => {
                     const bu = URL.createObjectURL(b);
                     blobMap[upth] = bu;
                     setPicUrl(bu);
-                    rp(bu);
                 });
             sl.songname.textContent = d.name;
             sl.singers.replaceChildren(...d.ar.map(i => h('span', { textContent: i.name })))
@@ -539,6 +533,15 @@ function toSong(platfrom, song, close) {
                 ? '//api.qijieya.cn/meting/?type=url&id='
                 : '//music.163.com/song/media/outer/url?id='
             ) + d.id;
+            csid = id;
+            renderpl({
+                pic: `${_u}?param=120x120`,
+                name: d.name,
+                al: d.al.name,
+                singers,
+                sid,
+                plan: platfrom,
+            });
         }
         songMap[sid].d
             ? det(songMap[sid].d)
@@ -641,15 +644,14 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.se
         sl.songname.addEventListener('click', rsn, { once: 1 });
     }}));
 
-location.host && location.host !== "cdmsc.chen-jin.dpdns.org" &&
-(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
+;(typeof rt === "undefined" || location.href.startsWith("https://www.ccw.site/player")
     ? document.body
     : location.host === "www.ccw.site" && rt.isPlayerOnly
         ? document.querySelector('.workTabs-1dkUq')
         : rt.renderer.canvas.parentNode
 ).appendChild(host);
 
-function renderpl(adds, nrr, save) {
+function renderpl(adds, i, save) {
     function cpd(d, i) {
         const c = [
             h('img', {
@@ -663,21 +665,25 @@ function renderpl(adds, nrr, save) {
         i === playi && c.unshift(h('div', { className: 'current fa-solid fa-play' }));
         return h("div", { onclick: () => toSong(d.plan, d) }, c);
     }
+    function rmc(c = plel.querySelector('.current')) {
+        if (c) {
+            c.setAttribute('remove', '');
+            setTimeout(() => c.remove(), 300);
+        }
+    }
+    if (i != null) playi = i;
+    else if (csid) {
+        playi = playlist.findIndex(i => i.sid === csid);
+        playi === -1 && (playi = playlist.length, rmc());
+    }
+    else playi = 0;
     if (adds) {
-        const _ = playlist.findIndex(i => i.id === adds.id);
-        if (_ !== -1) {
-            lrci === _;
-            return renderpl();
-        }
+        localStorage.playi = playi;
+        rmc();
+        if (playi < playlist.length) return plel.children[playi].prepend(h('div', { className: 'current fa-solid fa-play' }));
         playlist.push(adds);
-        if (nrr) {
-            const c = plel.querySelector('.current');
-            if (c) {
-                c.setAttribute('remove', '');
-                setTimeout(() => c.remove(), 300);
-            }
-            return plel.appendChild(cpd(adds, playlist.length - 1));
-        }
+        localStorage.playlist = JSON.stringify(playlist);
+        return plel.appendChild(cpd(adds, playlist.length - 1));
     }
     else plel.replaceChildren(...playlist.map(cpd));
 }

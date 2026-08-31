@@ -1,11 +1,11 @@
-:host, body {
+body { margin: 0; }
+:host, #cdm-host {
     position: absolute;
     inset: 0;
     color: #fff;
     z-index: 0;
     overflow: clip;
     background: #000;
-    margin: 0;
     & > button {
         position: absolute;
         &.fa-gear {
@@ -43,10 +43,9 @@
     -webkit-tap-highlight-color: transparent;
     box-sizing: border-box;
     font-family: 'PingFang';
-}
-
-*, ::before {
-    transition-duration: .3s;
+    &, &::before, &::after {
+        transition-duration: .3s;
+    }
 }
 
 button {
@@ -55,27 +54,26 @@ button {
     cursor: pointer;
     background: none;
     color: inherit;
-}
-
-button[class] {
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    margin: 0 auto;
-    font-size: 20px;
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    color: #fff8;
-    top: 10px;
-    z-index: 1;
-    border-radius: 50%;
-    &:hover {
-        color: #fff;
-        background: #fff6;
-        cursor: pointer;
-        &::before, &::after {
-            scale: .8;
+    &[class] {
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        margin: 0 auto;
+        font-size: 20px;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        color: #fff8;
+        top: 10px;
+        z-index: 1;
+        border-radius: 50%;
+        &:hover {
+            color: #fff;
+            background: #fff6;
+            cursor: pointer;
+            &::before, &::after {
+                scale: .8;
+            }
         }
     }
 }
@@ -359,7 +357,7 @@ button[class] {
             cursor: pointer;
             position: relative;
             overflow: clip;
-            animation: show 0.3s;
+            animation: show .3s;
             & > img {
                 border-radius: 20%;
                 width: 40px;
@@ -377,6 +375,7 @@ button[class] {
                 background: #fff5;
                 & > .current::before {
                     content: "\f01e";
+                    rotate: 360deg;
                 }
             }
             & > .current {
@@ -388,17 +387,21 @@ button[class] {
                 display: grid;
                 place-items: center;
                 color: #fffa;
+                animation: show 0.3s;
                 &[remove] {
                     transform: translateY(200%);
                 }
             }
+        }
+        &:empty::after {
+            content: '（暂无播放）';
+            margin: auto;
         }
     }
 }
 .search {
     position: absolute;
     color: #fff8;
-    transition: all .3s, color .1s;
     z-index: 1;
     inset: 0;
     padding: 10px;
@@ -535,7 +538,7 @@ button[class] {
             cursor: pointer;
             border: 1px solid #fff5;
             font-size: 16px;
-            animation: show 0.3s;
+            animation: show .3s;
             & > span {
                 color: #aaa;
                 font-size: 14px;
@@ -563,7 +566,7 @@ button[class] {
         translate: none;
     }
 }
-:host > .loading, body > .loading {
+.loading {
     position: absolute;
     inset: 0;
     background: #000;
@@ -651,4 +654,5 @@ button[class] {
     zoom: .5;
     color: inherit;
     font-family: 'Font Awesome 7 Free';
+    text-shadow: 0 0 1px currentColor;
 }
