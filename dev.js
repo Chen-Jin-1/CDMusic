@@ -1,8 +1,4 @@
-const version = '{
-                type: 'text',
-                label: 'v1.2.0 (2026/8/31)',
-                description: "完善歌曲列表\n本地存储数据"
-            },';
+const version = 'v1.2.1 Alpha 1';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
