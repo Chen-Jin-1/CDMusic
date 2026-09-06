@@ -9,9 +9,11 @@ body { margin: 0; }
     & > button {
         position: absolute;
         &.fa-gear {
-            right: 10px;
-            opacity: 0;
-            pointer-events: none;
+            right: 50px;
+            #song:has(#playlist.opened) ~ & {
+                opacity: 0;
+                pointer-events: none;
+            }
         }
         &.fa-list {
             right: 10px;
@@ -30,8 +32,7 @@ body { margin: 0; }
             top: 100%;
             &.fa-gear {
                 top: 10px;
-                opacity: 1;
-                pointer-events: auto;
+                right: 10px;
             }
         }
     }
@@ -39,7 +40,6 @@ body { margin: 0; }
         display: grid;
         place-items: center;
         flex: 0 0 auto;
-        margin: 0 auto;
         font-size: 20px;
         width: 30px;
         height: 30px;
@@ -147,6 +147,7 @@ button {
                 width: 40px;
                 height: 40px;
                 font-size: 30px;
+                margin: 0 auto;
                 &[dis] {
                     opacity: .5;
                     pointer-events: none;
@@ -397,26 +398,35 @@ button {
                 display: grid;
                 place-items: center;
                 color: #fffa;
-                animation: show 0.3s;
+                animation: overup .3s;
                 &.remove {
                     transform: translateY(200%);
-                }
-                & > button {
-                    opacity: 0 !important;
-                    pointer-events: none;
                 }
             }
             & > button {
                 opacity: 0;
-                margin-right: 5px;
+                margin: 0 5px 0 auto;
                 &:hover {
                     color: #f00;
                     background: #f778;
                 }
+                .current ~ & {
+                    opacity: 0 !important;
+                    pointer-events: none;
+                }
+            }
+            &:first-of-type {
+                margin-top: 0;
+            }
+            &.remove {
+                opacity: 0;
+                height: 0;
+                padding: 0;
+                pointer-events: none;
             }
         }
-        &:not(div)::after {
-            content: '（暂无播放）';
+        &:not(:has(div))::after {
+            content: '暂无播放';
             margin: auto;
         }
         &.remove {
@@ -426,7 +436,12 @@ button {
             border-width: 0;
         }
         & > button {
-            display: none;
+            position: absolute;
+            left: 10px;
+        }
+        .little > & {
+            opacity: 0;
+            pointer-events: none;
         }
     }
 }
@@ -442,6 +457,7 @@ button {
         position: relative;
         border-radius: 10px;
         border: 1px solid transparent;
+        width: 0;
         & > input {
             font-size: 13px;
             position: absolute;
@@ -494,6 +510,7 @@ button {
             backdrop-filter: blur(3px);
             color: #fff;
             border: 1px solid #fff5;
+            width: 100%;
             & > input {
                 pointer-events: auto;
                 opacity: 1;
@@ -686,4 +703,11 @@ button {
     color: inherit;
     font-family: 'Font Awesome 7 Free';
     text-shadow: 0 0 1px currentColor;
+}
+@keyframes overup {
+    from {
+        transform: translateY(200%);
+    } to {
+        transform: none;
+    }
 }

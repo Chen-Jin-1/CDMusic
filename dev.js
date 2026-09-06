@@ -1,4 +1,8 @@
-const version = 'v1.2.0';
+const version = '{
+                type: 'text',
+                label: 'v1.2.0 (2026/8/31)',
+                description: "完善歌曲列表\n本地存储数据"
+            },';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -10,7 +14,7 @@ function h(tn = 'span', props, childs, style, parent, attrs, events) {
     return e;
 }
 const host = h("div", { id: 'cdm-host' }),
-    shadow = location.host && !location.host === "cdmsc.chen-jin.dpdns.org"
+    shadow = location.host && location.host !== "cdmsc.chen-jin.dpdns.org"
         ? host.attachShadow({ mode: 'open' })
         : host;
 document.head.appendChild(h('link', {
@@ -35,7 +39,7 @@ cdmodal.importSettings({
                 "label": "API",
                 "default": "zm.wwoyun.cn",
                 "options": [
-                    "zm.wwoyun.cn"
+                    "zm.wwoyun.cn",
                 ]
             }
         ],
@@ -64,6 +68,11 @@ cdmodal.importSettings({
             {
                 "type": "text",
                 "label": "版本日志"
+            },
+            {
+                type: 'text',
+                label: 'v1.2.1 Alpha 1 (2026/9/6)',
+                description: "允许设置播放顺序类型"
             },
             {
                 type: 'text',
@@ -231,7 +240,8 @@ let playing = false,
     ende,
     songMap = {},
     csid,
-    playt = 'repeat';
+    playt = 'r',
+    plte;
 const songEl = h('div', { id: 'song' }, [
     layer = h('div', { className: 'layer' }),
     sl.e = h('div', {
@@ -290,7 +300,7 @@ const songEl = h('div', { id: 'song' }, [
     ]),
     sr.e = h('div', { id: 'song-right' }),
     plel = h('div', { id: 'playlist' }, [
-        fa("repeat", "button"),
+        plte = fa("repeat", "button"),
     ]),
 ], null, shadow);
 sl.btns.bk.setAttribute('dis', '');
@@ -406,7 +416,7 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
         lrcEls[lrci].className = "current";
         audio.removeEventListener('play', ende);
         return sr.e.scrollTo({
-            top: Math.max(0, lrcEls[lrci].offsetTop - (sr.e.clientHeight / 2)),
+            top: Math.max(0, lrcEls[lrci].offsetTop - (sr.e.clientHeight / 2) + 25),
             behavior: 'smooth'
         });
     }
@@ -416,7 +426,7 @@ function updatelrc(time = audio.currentTime, i = lrci, force) {
         lrcEls[i] && (lrcEls[i].className = "");
         lrcEls[n].className = "current";
         nscroll && sr.e.scrollTo({
-            top: Math.max(0, lrcEls[n].offsetTop - (sr.e.clientHeight / 2) - 25),
+            top: Math.max(0, lrcEls[n].offsetTop - (sr.e.clientHeight / 2) + 25),
             behavior: 'smooth',
         });
     }
@@ -431,8 +441,14 @@ audio.onended = () => {
             behavior: 'smooth',
         });
     }, { once: 1 });
-    if (playt === "repeat") {
+    if (playt === '1' || playlist.length === 1) {
+        sl.btns.play.click();
+    } else if (playt === "r") {
         const s = playlist[(playi + 1) % playlist.length];
+        toSong(s.plan, s);
+    } else if (playt === "s") {
+        let s = playlist[playi];
+        while (s === playlist[playi]) s = playlist[Math.floor(Math.random() * playlist.length)]
         toSong(s.plan, s);
     }
 };
@@ -700,7 +716,8 @@ function renderpl(adds, i, save) {
                     playlist.splice(i, 1);
                     playi > i && --playi;
                     savels();
-                    e.className = 'remove';
+                    e.style.height = `${getComputedStyle(e).height}px`;
+                    requestAnimationFrame(() => e.className = 'remove');
                     setTimeout(() => e.remove(), 300);
                 }
             }),
@@ -710,7 +727,7 @@ function renderpl(adds, i, save) {
     }
     function rmc(c = plel.querySelector('.current')) {
         if (c) {
-            c.className = 'current remove';
+            c.classList.add('remove');
             setTimeout(() => c.remove(), 300);
         }
     }
@@ -724,7 +741,7 @@ function renderpl(adds, i, save) {
         rmc();
         if (playi < playlist.length) {
             localStorage.playi = playi;
-            return plel.children[playi].prepend(h('div', { className: 'current fa-solid fa-play' }));
+            return plel.children[playi + 1].prepend(h('div', { className: 'current fa-solid fa-play' }));
         }
         playlist.push(adds);
         savels();
@@ -732,11 +749,12 @@ function renderpl(adds, i, save) {
         sl.btns.fd.removeAttribute('dis');
         return plel.appendChild(cpd(adds, playlist.length - 1));
     }
-    else plel.replaceChildren(...playlist.map(cpd));
+    else plel.replaceChildren(plte, ...playlist.map(cpd));
 }
 const savels = () => Object.assign(localStorage, {
     playi,
     playlist: JSON.stringify(playlist),
+    playt
 });
 
 
@@ -776,18 +794,39 @@ document.onvisibilitychange = e => {
     }
 }
 onresize = e => nscroll && updatelrc(0, null, 1);
+const pltecc = (t = playt) => plte.className =
+    t === "r"
+        ? "fa-solid fa-repeat"
+        : t === "s"
+            ? "fa-solid fa-shuffle"
+            : t === "1"
+                ? "fa-solid fa-repeat custom-1"
+                : ""
 if (localStorage.playi) {
     playi = +localStorage.playi;
     playlist = JSON.parse(localStorage.playlist);
     csid = localStorage.csid;
+    playt = localStorage.playt ?? 'r';
     const s = playlist[playi];
     renderpl();
     s && toSong(s.plan, s, 0);
     if (playlist.length) sl.btns.bk.removeAttribute('dis'), sl.btns.fd.removeAttribute('dis');
+    pltecc();
 }
 sl.btns.bk.onclick = sl.btns.fd.onclick = function(e) {
     const i = (this === sl.btns.fd ? playi + 1 : playi - 1) % playlist.length;
     i < 0 && (i = playlist.length + i);
     const s = playlist[i];
     toSong(s.plan, s);
+}
+plte.onclick = function(e) {
+    if (playt === "r") {
+        playt = '1';
+    } else if (playt === '1') {
+        playt = 's';
+    } else if (playt === 's') {
+        playt = 'r';
+    }
+    pltecc();
+    localStorage.playt = playt;
 }
