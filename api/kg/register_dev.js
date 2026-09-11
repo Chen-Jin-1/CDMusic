@@ -1,6 +1,6 @@
-import { createRequest } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/request.js';
-import { playlistAesEncrypt, playlistAesDecrypt, rsaEncrypt2 } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/crypto.js';
-import { getGuid } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/util.js';
+import { createRequest } from './request.js';
+import { playlistAesEncrypt, playlistAesDecrypt, rsaEncrypt2 } from './crypto.js';
+import { getGuid } from './util.js';
 
 /**
  * 注册设备，获取合法的 dfid

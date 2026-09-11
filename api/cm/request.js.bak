@@ -1,0 +1,86 @@
+// request.js
+import { weapi } from './crypto.js';
+import { cookieToJson, cookieObjToString } from './util.js';
+import { createOption } from './option.js';
+
+const DOMAIN = 'https://music.163.com';
+
+export function createRequest(uri, data, options = {}) {
+    return new Promise((resolve, reject) => {
+        // 1. 处理选项
+        const opt = createOption(options, options.crypto || 'weapi');
+        const headers = { ...opt.headers };
+
+        // 3. 处理 IP 透传
+        const ip = opt.realIP || opt.ip || '';
+        if (ip) {
+            headers['X-Real-IP'] = ip;
+            headers['X-Forwarded-For'] = ip;
+        }
+
+        // 4. weapi 加密
+        const csrfToken = cookie['__csrf'] || '';
+        data.csrf_token = csrfToken;
+        const encrypted = weapi(data);
+
+        // 5. 构建 URL 和请求体
+        const url = (opt.domain || DOMAIN) + '/weapi/' + uri.substr(5);
+        const body = new URLSearchParams({
+            params: encrypted.params,
+            encSecKey: encrypted.encSecKey,
+        }).toString();
+
+        // 6. 设置请求头
+        headers['Referer'] = opt.domain || DOMAIN;
+        headers['User-Agent'] = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+        headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        
+        const musicU = localStorage.getItem('netease_music_u') || '';
+        const csrf = localStorage.getItem('netease_csrf') || '';
+        const nmtid = localStorage.getItem('netease_nmtid') || '';
+        
+        const cookieObj = {};
+        if (musicU) cookieObj['MUSIC_U'] = musicU;
+        if (csrf) cookieObj['__csrf'] = csrf;
+        if (nmtid) cookieObj['NMTID'] = nmtid;
+        
+        headers['Cookie'] = cookieObjToString(cookie);
+
+        // 7. 发送请求（GM_xmlhttpRequest）
+        const requestOptions = {
+            url: url,
+            method: 'POST',
+            headers: headers,
+            data: body,
+            onload: function(response) {
+                console.log("load", response);
+                const answer = {
+                    status: response.status,
+                    body: response.response,
+                    cookie: [],
+                    headers: response.responseHeaders || {},
+                };
+
+                try {
+                    if (typeof response.response === 'string') {
+                        answer.body = JSON.parse(response.response);
+                    }
+                } catch (e) {}
+
+                if (response.status >= 200 && response.status < 300) {
+                    resolve(answer);
+                } else {
+                    reject(answer);
+                }
+            },
+            onerror: function(error) {
+                console.error('err', error);
+                reject({ status: 502, body: { error: 'Network error' }, cookie: [] });
+            },
+            anonymous: true,
+        };
+
+        console.log("send", requestOptions);
+        window.GMF.GM_xmlhttpRequest(requestOptions);
+    });
+}

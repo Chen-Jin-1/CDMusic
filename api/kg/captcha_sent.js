@@ -1,5 +1,5 @@
-import { createRequest } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/request.js';
-import { calculateMid, getGuid } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/util.js';
+import { createRequest } from './request.js';
+import { calculateMid, getGuid } from './util.js';
 
 export async function captcha_sent(params) {
     const guid = params?.cookie?.KUGOU_API_GUID || getGuid();

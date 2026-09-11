@@ -1,0 +1,29 @@
+// user_playlist.js
+import { createRequest } from './request.js';
+
+export function user_playlist(params = {}) {
+    // request.js 会自动从 localStorage 读取 token、userid、dfid、mid
+    // 所以这里只需要传业务参数
+    const dataMap = {
+        total_ver: 979,
+        type: 2,
+        page: params?.page || 1,
+        pagesize: params?.pagesize || 30,
+    };
+
+    return createRequest({
+        url: '/v7/get_all_list',
+        method: 'POST',
+        data: dataMap,
+        params: {
+            plat: 1,
+            // userid 和 token 让 request.js 自动注入
+        },
+        encryptType: 'android',
+        headers: {
+            'x-router': 'cloudlist.service.kugou.com',
+        },
+        // 不需要传 cookie，request.js 会自动从 localStorage 读取
+        clearDefaultParams: false,
+    });
+}

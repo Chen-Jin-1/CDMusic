@@ -1,5 +1,5 @@
-import { createRequest } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/request.js';
-import { cryptoRSAEncrypt } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/crypto.js';
+import { createRequest } from './request.js';
+import { cryptoRSAEncrypt } from './crypto.js';
 
 /**
  * 获取用户详情信息

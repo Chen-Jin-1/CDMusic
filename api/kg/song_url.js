@@ -1,4 +1,4 @@
-import { createRequest } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/request.js';
+import { createRequest } from './request.js';
 
 export function song_url(params = {}) {
     const qualityMap = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'];

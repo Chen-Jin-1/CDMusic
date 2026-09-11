@@ -1,10 +1,12 @@
+// request.js - 保留原结构，只替换 axios → GM_xmlhttpRequest
+
 import {
     signKey,
     signatureAndroidParams,
     signatureRegisterParams,
     signatureWebParams
-} from 'https://cdmsc.chen-jin.dpdns.org/kgapi/helper.js';
-import { parseCookieString } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/util.js';
+} from './helper.js';
+import { parseCookieString } from './util.js';
 
 // ----- 配置 -----
 const config = {

@@ -16,12 +16,12 @@
  * 所有签名算法均基于 MD5 哈希，通过将盐值（salt）+ 参数拼接后取 MD5 实现。
  *
  * @module helper
- * @requires https://cdmsc.chen-jin.dpdns.org/kgapi/crypto - MD5 加密函数
- * @requires https://cdmsc.chen-jin.dpdns.org/kgapi/config.json - 平台配置（appid、clientver 等）
+ * @requires ./crypto - MD5 加密函数
+ * @requires ./config.json - 平台配置（appid、clientver 等）
  */
 
-await import('https://cdmsc.chen-jin.dpdns.org/kgapi/crypto-js.js');
-import { cryptoMd5, wordArrayFromBuffer } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/crypto.js';
+await import('./crypto-js.js');
+import { cryptoMd5, wordArrayFromBuffer } from './crypto.js';
 const { appid: useAppid, liteAppid, clientver: useClientver, liteClientver } = {
   "wx_appid": "wx79f2c4418704b4f8",
   "wx_lite_appid": "wx72b795aca60ad321",

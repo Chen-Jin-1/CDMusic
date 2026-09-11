@@ -1,0 +1,45 @@
+// crypto.js
+// 依赖全局 CryptoJS 和 forge
+
+const iv = '0102030405060708';
+const presetKey = '0CoJUm6Qyw8W8jud';
+const base62 = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+const publicKey = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgtQn2JZ34ZC28NWYpAUd98iZ37BUrX/aKzmFbt7clFSs6sXqHauqKWqdtLkF2KexO40H1YTX8z2lSgBBOAxLsvaklV8k4cBFK9snQXE9/DDaFt6Rr7iVZMldczhC0JNgTz+SHXT6CBHuX3e9SdB1Ua44oncaTWz7OBGLbCiK45wIDAQAB
+-----END PUBLIC KEY-----`;
+
+function aesEncrypt(text, mode, key, iv) {
+    const encrypted = CryptoJS.AES.encrypt(
+        CryptoJS.enc.Utf8.parse(text),
+        CryptoJS.enc.Utf8.parse(key),
+        {
+            iv: CryptoJS.enc.Utf8.parse(iv),
+            mode: CryptoJS.mode[mode.toUpperCase()],
+            padding: CryptoJS.pad.Pkcs7,
+        }
+    );
+    return encrypted.toString();
+}
+
+function rsaEncrypt(str, key) {
+    const forgePublicKey = forge.pki.publicKeyFromPem(key);
+    const encrypted = forgePublicKey.encrypt(str, 'NONE');
+    return forge.util.bytesToHex(encrypted);
+}
+
+export function weapi(object) {
+    const text = JSON.stringify(object);
+    let secretKey = '';
+    for (let i = 0; i < 16; i++) {
+        secretKey += base62.charAt(Math.round(Math.random() * 61));
+    }
+    return {
+        params: aesEncrypt(
+            aesEncrypt(text, 'cbc', presetKey, iv),
+            'cbc',
+            secretKey,
+            iv
+        ),
+        encSecKey: rsaEncrypt(secretKey.split('').reverse().join(''), publicKey),
+    };
+}

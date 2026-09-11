@@ -1,7 +1,7 @@
-import { createRequest } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/request.js';
-import { cryptoAesEncrypt, cryptoAesDecrypt, cryptoRSAEncrypt } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/crypto.js';
-import { signParamsKey } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/helper.js';
-import { randomString } from 'https://cdmsc.chen-jin.dpdns.org/kgapi/util.js';
+import { createRequest } from './request.js';
+import { cryptoAesEncrypt, cryptoAesDecrypt, cryptoRSAEncrypt } from './crypto.js';
+import { signParamsKey } from './helper.js';
+import { randomString } from './util.js';
 
 // 概念版加密常量
 const liteT2Key = 'fd14b35e3f81af3817a20ae7adae7020';

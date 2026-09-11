@@ -1,0 +1,43 @@
+// audio.js
+import { createRequest } from './request.js';
+import { signParamsKey } from './helper.js';
+
+// 概念版常量
+const isLite = true;
+const appid = isLite ? 3116 : 1005;
+const clientver = isLite ? 11440 : 20489;
+
+export function audio(params = {}) {
+    const dateTime = Date.now();
+    const data = (params?.hash || '').split(',').map((s) => ({ hash: s, audio_id: 0 }));
+    const dfid = params?.cookie?.dfid || params?.dfid || '-';
+    const userid = params?.cookie?.userid || params?.userid || 0;
+    const token = params?.cookie?.token || params?.token || 0;
+
+    const dataMap = {
+        appid,
+        clienttime: dateTime,
+        clientver,
+        data,
+        dfid,
+        key: signParamsKey(dateTime),
+        mid: params?.cookie?.KUGOU_API_MID || localStorage.getItem('kugou_mid') || '0',
+    };
+
+    if (token) dataMap['token'] = token;
+    if (userid) dataMap['userid'] = userid;
+
+    return createRequest({
+        baseURL: 'http://kmr.service.kugou.com',
+        url: '/v1/audio/audio',
+        method: 'POST',
+        data: dataMap,
+        encryptType: 'android',
+        headers: {
+            'x-router': 'kmr.service.kugou.com',
+            'Content-Type': 'application/json',
+        },
+        cookie: params?.cookie || {},
+        clearDefaultParams: false,
+    });
+}
