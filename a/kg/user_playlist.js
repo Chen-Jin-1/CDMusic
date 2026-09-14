@@ -1,8 +1,8 @@
 // user_playlist.js
-import { createRequest } from './request.js';
+import { createRequest } from './util/request.js';
 
 export function user_playlist(params = {}) {
-    // request.js 会自动从 localStorage 读取 token、userid、dfid、mid
+    // util/request.js 会自动从 localStorage 读取 token、userid、dfid、mid
     // 所以这里只需要传业务参数
     const dataMap = {
         total_ver: 979,
@@ -17,13 +17,13 @@ export function user_playlist(params = {}) {
         data: dataMap,
         params: {
             plat: 1,
-            // userid 和 token 让 request.js 自动注入
+            // userid 和 token 让 util/request.js 自动注入
         },
         encryptType: 'android',
         headers: {
             'x-router': 'cloudlist.service.kugou.com',
         },
-        // 不需要传 cookie，request.js 会自动从 localStorage 读取
+        // 不需要传 cookie，util/request.js 会自动从 localStorage 读取
         clearDefaultParams: false,
     });
 }

@@ -1,5 +1,5 @@
-import { createRequest } from './request.js';
-import { cryptoRSAEncrypt } from './crypto.js';
+import { createRequest } from './util/request.js';
+import { cryptoRSAEncrypt } from './util/crypto.js';
 
 /**
  * 获取用户详情信息

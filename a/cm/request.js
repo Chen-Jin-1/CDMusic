@@ -5,13 +5,6 @@ import { createOption } from './option.js';
 
 const DOMAIN = 'https://music.163.com';
 
-/**
- * 发送网易云 API 请求
- * @param {string} uri - 接口路径，如 '/api/sms/captcha/sent'
- * @param {Object} data - 请求数据
- * @param {Object} options - 请求选项（来自 createOption）
- * @returns {Promise} 请求结果
- */
 export function createRequest(uri, data, options = {}) {
     return new Promise((resolve, reject) => {
         // ========== 1. 处理选项 ==========
@@ -19,7 +12,6 @@ export function createRequest(uri, data, options = {}) {
         const headers = { ...opt.headers };
 
         // ========== 2. 处理 Cookie ==========
-        // 优先从 localStorage 读取，其次从 options.cookie 读取
         let cookieStr = localStorage.getItem('netease_cookie') || '';
         let cookie = opt.cookie || {};
 
@@ -28,7 +20,6 @@ export function createRequest(uri, data, options = {}) {
         }
 
         if (typeof cookie === 'object' && Object.keys(cookie).length) {
-            // 如果 options 里传了 cookie，优先使用
             cookieStr = cookieObjToString(cookie);
         }
 
@@ -44,7 +35,6 @@ export function createRequest(uri, data, options = {}) {
         }
 
         // ========== 4. 处理 csrf_token ==========
-        // 优先从 localStorage 读取，其次从 cookie 里提取
         let csrfToken = localStorage.getItem('netease_csrf') || '';
         if (!csrfToken && cookieStr) {
             const match = cookieStr.match(/__csrf=([^;]+)/);
@@ -56,7 +46,6 @@ export function createRequest(uri, data, options = {}) {
         const encrypted = weapi(data);
 
         // ========== 6. 构建 URL 和请求体 ==========
-        // 原代码 uri 以 '/api/' 开头，weapi 接口实际路径是 '/weapi/' + uri.substr(5)
         const url = (opt.domain || DOMAIN) + '/weapi/' + uri.substr(5);
         const body = new URLSearchParams({
             params: encrypted.params,
@@ -68,18 +57,38 @@ export function createRequest(uri, data, options = {}) {
         headers['User-Agent'] = opt.ua || 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
         headers['Content-Type'] = 'application/x-www-form-urlencoded';
 
-        // ========== 8. 发送请求（GM_xmlhttpRequest） ==========
+        // ========== 8. 发送请求 ==========
         const requestOptions = {
             url: url,
             method: 'POST',
             headers: headers,
             data: body,
             onload: function(response) {
+                console.log("load", response);
+                // ========== 内联解析 responseHeaders（字符串 → 对象） ==========
+                const parsedHeaders = {};
+                if (typeof response.responseHeaders === 'string') {
+                    response.responseHeaders.split('\r\n').forEach(line => {
+                        const idx = line.indexOf(':');
+                        if (idx > 0) {
+                            const key = line.substring(0, idx).trim().toLowerCase();
+                            const value = line.substring(idx + 1).trim();
+                            if (parsedHeaders[key]) {
+                                parsedHeaders[key] = Array.isArray(parsedHeaders[key])
+                                    ? [...parsedHeaders[key], value]
+                                    : [parsedHeaders[key], value];
+                            } else {
+                                parsedHeaders[key] = value;
+                            }
+                        }
+                    });
+                }
+
                 const answer = {
                     status: response.status,
                     body: response.response,
                     cookie: [],
-                    headers: response.responseHeaders || {},
+                    headers: parsedHeaders,
                 };
 
                 // 解析响应体
@@ -87,20 +96,15 @@ export function createRequest(uri, data, options = {}) {
                     if (typeof response.response === 'string') {
                         answer.body = JSON.parse(response.response);
                     }
-                } catch (e) {
-                    // 保持原始响应
-                }
+                } catch (e) {}
 
                 // 解析 Set-Cookie
-                if (response.responseHeaders) {
-                    const setCookie = response.responseHeaders['set-cookie'];
-                    if (setCookie) {
-                        const parts = Array.isArray(setCookie) ? setCookie : [setCookie];
-                        answer.cookie = parts.map(part => part.split(';')[0]);
-                    }
+                const setCookie = parsedHeaders['set-cookie'];
+                if (setCookie) {
+                    const parts = Array.isArray(setCookie) ? setCookie : [setCookie];
+                    answer.cookie = parts.map(part => part.split(';')[0]);
                 }
 
-                // 判断成功/失败
                 if (response.status >= 200 && response.status < 300) {
                     resolve(answer);
                 } else {
@@ -114,5 +118,6 @@ export function createRequest(uri, data, options = {}) {
         };
 
         window.GMF.GM_xmlhttpRequest(requestOptions);
+        console.log("send", requestOptions);
     });
 }

@@ -15,8 +15,8 @@
  * @requires big-integer - 大整数库（用于 MID 的进制转换）
  */
 
-await import('../lib/crypto-js.js');
-await import('./forge.js');
+await import('/lib/crypto-js.js');
+await import('/lib/forge.js');
 
 /**
  * 生成随机字符串（大写字母 + 数字）

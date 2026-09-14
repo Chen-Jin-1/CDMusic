@@ -1,5 +1,5 @@
-import { createRequest } from './request.js';
-import { calculateMid, getGuid } from './util.js';
+import { createRequest } from './util/request.js';
+import { calculateMid, getGuid } from './util/util.js';
 
 export async function captcha_sent(params) {
     const guid = params?.cookie?.KUGOU_API_GUID || getGuid();

@@ -1,7 +1,7 @@
-import { createRequest } from './request.js';
-import { cryptoAesEncrypt, cryptoAesDecrypt, cryptoRSAEncrypt } from './crypto.js';
-import { signParamsKey } from './helper.js';
-import { randomString } from './util.js';
+import { createRequest } from './util/request.js';
+import { cryptoAesEncrypt, cryptoAesDecrypt, cryptoRSAEncrypt } from './util/crypto.js';
+import { signParamsKey } from './util/helper.js';
+import { randomString } from './util/util.js';
 
 // 概念版加密常量
 const liteT2Key = 'fd14b35e3f81af3817a20ae7adae7020';

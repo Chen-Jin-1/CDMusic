@@ -1,5 +1,5 @@
 // login_cellphone.js
-await import('../lib/crypto-js.js');  // 或全局 CryptoJS
+await import('/lib/crypto-js.js');  // 或全局 CryptoJS
 import { createOption } from './option.js';
 import { createRequest } from './request.js';
 
@@ -41,11 +41,27 @@ export async function login_cellphone(query) {
     // 处理返回结果
     if (result.body.code === 200) {
         // 1. 把所有 Cookie 拼成字符串存起来
-        const cookieStr = (result.cookie || [])
-            .map(c => c.split(';')[0])
-            .filter(c => c.includes('='))
-            .join('; ');
-        localStorage.setItem('netease_cookie', cookieStr);
+        const result = {};
+        if (typeof headers === 'string') {
+            headers.split('\r\n').forEach(line => {
+                const idx = line.indexOf(':');
+                if (idx > 0) {
+                    const key = line.substring(0, idx).trim().toLowerCase();
+                    const value = line.substring(idx + 1).trim();
+                    // 多个同名头（如 set-cookie）用数组存
+                    if (CookieStr[key]) {
+                        if (Array.isArray(CookieStr[key])) {
+                            CookieStr[key].push(value);
+                        } else {
+                            CookieStr[key] = [CookieStr[key], value];
+                        }
+                    } else {
+                        CookieStr[key] = value;
+                    }
+                }
+            });
+        }
+    
         
         // 2. 单独提取 __csrf 存起来
         const csrfMatch = cookieStr.match(/__csrf=([^;]+)/);

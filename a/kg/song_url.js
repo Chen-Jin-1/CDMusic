@@ -1,4 +1,4 @@
-import { createRequest } from './request.js';
+import { createRequest } from './util/request.js';
 
 export function song_url(params = {}) {
     const qualityMap = ['piano', 'acappella', 'subwoofer', 'ancient', 'dj', 'surnay'];

@@ -1,6 +1,6 @@
-import { createRequest } from './request.js';
-import { playlistAesEncrypt, playlistAesDecrypt, rsaEncrypt2 } from './crypto.js';
-import { getGuid } from './util.js';
+import { createRequest } from './util/request.js';
+import { playlistAesEncrypt, playlistAesDecrypt, rsaEncrypt2 } from './util/crypto.js';
+import { getGuid } from './util/util.js';
 
 /**
  * 注册设备，获取合法的 dfid

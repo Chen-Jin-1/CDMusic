@@ -1,8 +1,8 @@
 // crypto.js
 // 依赖全局 CryptoJS 和 forge
 
-await import('../lib/crypto-js.js');
-await import('../lib/forge.js');
+await import('/lib/crypto-js.js');
+await import('/lib/forge.js');
 
 const iv = '0102030405060708';
 const presetKey = '0CoJUm6Qyw8W8jud';

@@ -1,6 +1,6 @@
 // audio.js
-import { createRequest } from './request.js';
-import { signParamsKey } from './helper.js';
+import { createRequest } from './util/request.js';
+import { signParamsKey } from './util/helper.js';
 
 // 概念版常量
 const isLite = true;

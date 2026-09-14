@@ -20,7 +20,7 @@
  * @requires ./config.json - 平台配置（appid、clientver 等）
  */
 
-await import('./crypto-js.js');
+await import('/lib/crypto-js.js');
 import { cryptoMd5, wordArrayFromBuffer } from './crypto.js';
 const { appid: useAppid, liteAppid, clientver: useClientver, liteClientver } = {
   "wx_appid": "wx79f2c4418704b4f8",

@@ -1,4 +1,4 @@
-import { createRequest } from './request.js';
+import { createRequest } from './util/request.js';
 export function playlist(params) {
   const pagesize = params?.pagesize || 30;
   const paramsMap = {
