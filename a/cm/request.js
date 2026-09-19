@@ -1,11 +1,22 @@
 // request.js
 import { weapi } from './crypto.js';
 import { cookieToJson, cookieObjToString } from './util.js';
-import { createOption } from './option.js';
+
+export function createOption(query = {}, crypto = '', checkToken = false) {
+    return {
+        crypto: query.crypto || crypto || 'weapi',
+        cookie: query.cookie || '',
+        ua: query.ua || '',
+        realIP: query.realIP || '',
+        domain: query.domain || 'https://music.163.com',
+        headers: query.headers || {},
+        timeout: query.timeout || 0,
+    };
+}
 
 const DOMAIN = 'https://music.163.com';
 
-export function createRequest(uri, data, options = {}) {
+export function request(uri, data, options = {}) {
     return new Promise((resolve, reject) => {
         // ========== 1. 处理选项 ==========
         const opt = createOption(options, options.crypto || 'weapi');
