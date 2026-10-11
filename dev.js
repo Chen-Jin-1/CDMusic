@@ -1,4 +1,4 @@
-const version = 'v1.2.1 Alpha 2';
+const version = 'v1.2.1 Alpha 3';
 document.getElementById('cdm-host')?.remove();
 function h(tn = 'span', props, childs, style, parent, attrs, events) {
     const e = Object.assign(document.createElement(tn), props);
@@ -10,115 +10,16 @@ function h(tn = 'span', props, childs, style, parent, attrs, events) {
     return e;
 }
 const host = h("div", { id: 'cdm-host' }),
-    shadow = location.host && location.host !== "cdmsc.chen-jin.dpdns.org"
-        ? host.attachShadow({ mode: 'open' })
-        : host;
+    shadow = location.host &&
+        location.host !== "cdmsc.chen-jin.dpdns.org" &&
+        location.hostname !== "localhost"
+            ? host.attachShadow({ mode: 'open' })
+            : host;
 document.head.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//cdmsc.chen-jin.dpdns.org/top.css'
 }));
 document.documentElement.setAttribute('data-cdmodal-theme', 'dark');
-import { cdmodal, settingStore } from "https://d.chen-jin.dpdns.org/cdmodal-v2.min.js";
-settingStore.importSettings({
-    "通用": [],
-    "网易云音乐": [
-        {
-            "type": "select",
-            "label": "API",
-            "default": "zm.wwoyun.cn",
-            "options": [
-                "zm.wwoyun.cn",
-            ]
-        }
-    ],
-    "关于": [
-        {
-            "type": "text",
-            "label": `CDMusic ${version} ${location.host === "www.ccw.site"
-                ? 'For CCW'
-                : location.host === "40code.com"
-                    ? 'For 40code'
-                    : location.host === "zerocat.dev"
-                        ? 'For ZeroCat'
-                        : ''
-            }`,
-            "description": "by Chen-Jin"
-        },
-        {
-            "type": "text",
-            "label": "\u200b"
-        },
-        {
-            "type": "text",
-            "label": "版本日志"
-        },
-        {
-            type: 'text',
-            label: 'v1.2.1 Alpha 1 (2026/9/6)',
-            description: "允许设置播放顺序类型"
-        },
-        {
-            type: 'text',
-            label: 'v1.2.0 (2026/8/31)',
-            description: "完善歌曲列表\n本地存储数据"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.6 (2026/8/30)",
-            "description": "小歌曲界面\n性能优化\n修复重新播放时未重新开始等 Bug"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.5 (2026/8/29)",
-            "description": "优化网页版\nCSS 采用外联样式表\n打字时不显示搜索建议\n修复 CCW 版 Alert 不显示问题"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.4 (2026/8/28)",
-            "description": "CCW 版从 CDMusic 官网获取代码"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.3 (2026/8/27)",
-            "description": "制作网页版\n更换 CDMusic 网易云 API"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.2 (2026/8/24)",
-            "description": "修复部分歌词问题\n完善全屏搜索（显示搜索状态）\n更新 CDModal（但 CDMusic 设置还没做）"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.1 (2026/8/23)",
-            "description": "修复重新播放时最后一句仍亮\n纯音乐无法播放\n完善全屏搜索（但分页还没做）\n切歌标题修改\n滚动后 3 秒内不自动滚动"
-        },
-        {
-            "type": "text",
-            "label": "v1.1.0 (2026/8/21)",
-            "description": "修复切换页面歌词和时间异常\n图标修改\n采用新音频获取方式，节省流量与节约时间\nVIP / 付费标识（付费歌曲提示）\n免费和试听音乐优先使用网易云官方 API\n歌曲加载处理\n双语歌词支持"
-        },
-        {
-            "type": "text",
-            "label": "v1.0.3 (2026/8/19)",
-            "description": "原先播放，切歌后暂停\n背景采色（避免边缘泛灰）\n加载界面\n请求歌曲 API 而非硬编码\n修改标题和图标"
-        },
-        {
-            "type": "text",
-            "label": "v1.0.2 (2026/8/7)",
-            "description": "修复关闭搜索不彻底（输入内容仍保留，显示透明搜索建议）、歌词未归零（重播与切歌时）\n请求歌曲优先 fetch 替换 m? 为 m9"
-        },
-        {
-            "type": "text",
-            "label": "v1.0.1 (2026/8/7)",
-            "description": "完成基础功能"
-        },
-        {
-            "type": "text",
-            "label": "v1.0.0 (2026/8/5)",
-            "description": "发布 CDMusic"
-        }
-    ],
-});
 shadow.appendChild(h('link', {
     rel: 'stylesheet',
     href: '//use.fontawesome.com/releases/v7.3.1/css/all.css'
@@ -685,33 +586,36 @@ const sbtn = shadow.appendChild(fa('gear', 'button', { onclick: () => cdmodal.sh
 
 function renderpl(adds, i, save) {
     function cpd(d, i) {
-        let b, e;
-        const c = [
-            h('img', {
-                alt: d.al,
-                src: d.pic,
-            }),
+        return h("div", {
+            onclick: e => toSong(d.plan, d),
+            className: i === playi ? "current" : "",
+        }, [
+            h('span', { textContent: i + 1 }),
+            h('div', { className: 'img' }, [
+                h('img', {
+                    alt: d.al,
+                    src: d.pic,
+                }),
+            ]),
             h('div', { textContent: d.name }, [
                 h('span', { textContent: d.singers })
             ]),
-            b = fa('trash', 'button', {
+            fa('trash', 'button', {
                 onclick: () => {
                     playlist.splice(i, 1);
                     playi > i && --playi;
                     savels();
-                    e.style.height = `${getComputedStyle(e).height}px`;
+                    e.style.height = getComputedStyle(e).height;
                     requestAnimationFrame(() => e.className = 'remove');
                     setTimeout(() => e.remove(), 300);
                 }
             }),
-        ];
-        i === playi && c.unshift(h('div', { className: 'current fa-solid fa-play' }));
-        return e = h("div", { onclick: e => e.target !== b && toSong(d.plan, d) }, c);
+        ]);
     }
     function rmc(c = plel.querySelector('.current')) {
         if (c) {
-            c.classList.add('remove');
-            setTimeout(() => c.remove(), 300);
+            c.className = 'outc';
+            return setTimeout(() => c.className = "", 300);
         }
     }
     if (i != null) playi = i;
@@ -724,7 +628,7 @@ function renderpl(adds, i, save) {
         rmc();
         if (playi < playlist.length) {
             localStorage.playi = playi;
-            return plel.children[playi + 1].prepend(h('div', { className: 'current fa-solid fa-play' }));
+            return plel.children[playi + 1].className = "current";
         }
         playlist.push(adds);
         savels();
@@ -768,6 +672,108 @@ await Promise.all([
 ]);
 loads.textContent = "加载脚本";
 import { cm } from '/api.js';
+import { cdmodal, settingStore } from "https://d.chen-jin.dpdns.org/cdmodal-v2.min.js";
+settingStore.importSettings({
+    "通用": [],
+    "网易云音乐": [
+        {
+            "type": "select",
+            "label": "API",
+            "default": "zm.wwoyun.cn",
+            "options": [
+                "zm.wwoyun.cn",
+            ]
+        }
+    ],
+    "关于": [
+        {
+            "type": "text",
+            "label": `CDMusic ${version} ${location.host === "www.ccw.site"
+                ? 'For CCW'
+                : location.host === "40code.com"
+                    ? 'For 40code'
+                    : location.host === "zerocat.dev"
+                        ? 'For ZeroCat'
+                        : ''
+            }`,
+            "description": "by Chen-Jin"
+        },
+        {
+            "type": "text",
+            "label": "\u200b"
+        },
+        {
+            "type": "text",
+            "label": "版本日志"
+        },
+        {
+            type: 'text',
+            label: 'v1.2.1 Alpha 1 (2026/9/6)',
+            description: "允许设置播放顺序类型"
+        },
+        {
+            type: 'text',
+            label: 'v1.2.0 (2026/8/31)',
+            description: "完善歌曲列表\n本地存储数据"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.6 (2026/8/30)",
+            "description": "小歌曲界面\n性能优化\n修复重新播放时未重新开始等 Bug"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.5 (2026/8/29)",
+            "description": "优化网页版\nCSS 采用外联样式表\n打字时不显示搜索建议\n修复 CCW 版 Alert 不显示问题"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.4 (2026/8/28)",
+            "description": "CCW 版从 CDMusic 官网获取代码"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.3 (2026/8/27)",
+            "description": "制作网页版\n更换 CDMusic 网易云 API"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.2 (2026/8/24)",
+            "description": "修复部分歌词问题\n完善全屏搜索（显示搜索状态）\n更新 CDModal（但 CDMusic 设置还没做）"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.1 (2026/8/23)",
+            "description": "修复重新播放时最后一句仍亮\n纯音乐无法播放\n完善全屏搜索（但分页还没做）\n切歌标题修改\n滚动后 3 秒内不自动滚动"
+        },
+        {
+            "type": "text",
+            "label": "v1.1.0 (2026/8/21)",
+            "description": "修复切换页面歌词和时间异常\n图标修改\n采用新音频获取方式，节省流量与节约时间\nVIP / 付费标识（付费歌曲提示）\n免费和试听音乐优先使用网易云官方 API\n歌曲加载处理\n双语歌词支持"
+        },
+        {
+            "type": "text",
+            "label": "v1.0.3 (2026/8/19)",
+            "description": "原先播放，切歌后暂停\n背景采色（避免边缘泛灰）\n加载界面\n请求歌曲 API 而非硬编码\n修改标题和图标"
+        },
+        {
+            "type": "text",
+            "label": "v1.0.2 (2026/8/7)",
+            "description": "修复关闭搜索不彻底（输入内容仍保留，显示透明搜索建议）、歌词未归零（重播与切歌时）\n请求歌曲优先 fetch 替换 m? 为 m9"
+        },
+        {
+            "type": "text",
+            "label": "v1.0.1 (2026/8/7)",
+            "description": "完成基础功能"
+        },
+        {
+            "type": "text",
+            "label": "v1.0.0 (2026/8/5)",
+            "description": "发布 CDMusic"
+        }
+    ],
+});
+cdmodal.settingValueChange = () => {};
 loading.classList.add("out");
 setTimeout(() => loading.remove(), 300);
 
